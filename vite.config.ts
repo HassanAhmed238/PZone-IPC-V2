@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/PZone-IPC-V2/",
+  base: process.env.CI ? "/PZone-IPC-V2/" : "/",
   server: {
     host: "::",
     port: 8081,
