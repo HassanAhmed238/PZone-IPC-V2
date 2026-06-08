@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400..800&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+
+    --font-heading: 'Cormorant Garamond', serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+
+    --background: 220 20% 97%;
+    --foreground: 220 30% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 10%;
+
+    --primary: 36 38% 64%; /* #c5a880 - Golden */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 220 30% 10%;
+
+    --muted: 220 15% 93%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 36 38% 64%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 36 38% 64%;
+
+    --radius: 0.5rem; /* Sharp, high-end look */
+
+    /* P.ZONE brand colors - CozyStay Hotel luxury */
+    --brand-gold: 197 168 128;
+    --brand-gold-hex: #c5a880;
+    --brand-champagne: #dfc9ab;
+    --brand-charcoal: #09090b;
+    --brand-teal: 174 62% 42%;
+    --brand-orange: 28 88% 55%;
+    --brand-magenta: 326 72% 58%;
+    --brand-purple: 262 80% 64%;
+    --brand-blue: 217 91% 60%;
+    --gradient-brand: linear-gradient(135deg, #c5a880, #dfc9ab);
+    --gradient-sidebar: linear-gradient(180deg, #111827 0%, #09090b 100%);
+
+    /* Sidebar */
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 240 5% 64.9%;
+    --sidebar-primary: 36 38% 64%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5.9% 10%;
+    --sidebar-accent-foreground: 240 5% 96%;
+    --sidebar-border: 240 5.9% 10%;
+    --sidebar-ring: 36 38% 64%;
+  }
+
+  .dark {
+    color-scheme: dark;
+
+    --background: 240 10% 3.9%; /* Absolute deep luxury charcoal black #09090b */
+    --foreground: 0 0% 98%;
+    --card: 240 10% 5.9%; /* Polished card background #121214 */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 5.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 36 38% 64%; /* #c5a880 Brushed gold */
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 5.9% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5.9% 10%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 36 38% 64%;
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 10%; /* Very dark border */
+    --input: 240 5.9% 10%;
+    --ring: 36 38% 64%;
+    --gradient-brand: linear-gradient(135deg, #c5a880, #dfc9ab);
+    --gradient-sidebar: linear-gradient(180deg, #09090b 0%, #050506 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer utilities {
+  .font-luxury-serif {
+    font-family: 'Cinzel', serif;
+  }
+  .font-editorial-serif {
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .font-sans-modern {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  .text-brand-gold {
+    color: #c5a880;
+  }
+  .bg-brand-gold {
+    background-color: #c5a880;
+  }
+  .gradient-brand {
+    background: var(--gradient-brand);
+  }
+  .border-brand-gold-10 {
+    border-color: rgba(197, 168, 128, 0.1);
+  }
+  .border-brand-gold-20 {
+    border-color: rgba(197, 168, 128, 0.2);
+  }
+  .border-brand-gold-30 {
+    border-color: rgba(197, 168, 128, 0.3);
+  }
+
+  .luxury-glow {
+    box-shadow: 0 0 20px rgba(197, 168, 128, 0.05);
+  }
+  .luxury-glow-hover:hover {
+    box-shadow: 0 0 30px rgba(197, 168, 128, 0.12);
+  }
+}
+
+/* Custom scrollbar follows the active theme */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(197, 168, 128, 0.15);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 168, 128, 0.3);
+}

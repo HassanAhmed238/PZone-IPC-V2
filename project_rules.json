@@ -1,0 +1,40 @@
+{
+  "project_name": "PZone Control System",
+  "description": "Comprehensive ERP & Project Management System for Construction / Engineering",
+  "tech_stack": {
+    "frontend": "React, Vite, TypeScript, Tailwind CSS, shadcn/ui",
+    "backend": "Supabase (PostgreSQL, Auth, Storage)",
+    "ai_providers": "Groq (Llama 3.3 70B), Google Gemini (2.0 Flash)",
+    "pdf_parsing": "pdfjs-dist (Client-side)"
+  },
+  "modules": {
+    "1_user_management": {
+      "roles": ["admin", "pm", "cost_control", "contracts", "planning", "commercial"],
+      "default_admins": ["solimane@pzone", "admin@pzone.com"]
+    },
+    "2_contracts": {
+      "types": ["FIDIC_RED", "FIDIC_YELLOW", "FIDIC_SILVER", "EGYPTIAN_LAW", "CUSTOM"],
+      "features": [
+        "PDF Upload & Parsing",
+        "AI-Powered Master Analysis with Multi-Department Reports (Commercial, Risk, PM, etc.)",
+        "Smart BOQ Extractor (Lump Sum format: Sections & Items)",
+        "Auto-Correction of metadata (Employer, Value, Dates) from Contract Text",
+        "Amendments Tracking (In-progress)"
+      ]
+    },
+    "3_invoices_and_cost": {
+      "features": [
+        "Client Invoices (المستخلصات) tracking",
+        "Cost Control Dashboard",
+        "Ongoing Projects Progress tracking"
+      ]
+    }
+  },
+  "rules_and_conventions": [
+    "Always use Arabic (ar) for user-facing UI and date formatting unless otherwise specified.",
+    "Use Lucide-React icons extensively.",
+    "Maintain clean and premium aesthetics (gradients, shadows, responsive layouts).",
+    "Keep API keys (Groq/Gemini) in localStorage as fallback or environment variables.",
+    "Ensure RLS (Row Level Security) considerations in Supabase when querying data."
+  ]
+}
