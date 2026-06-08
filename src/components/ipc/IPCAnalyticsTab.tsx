@@ -47,6 +47,16 @@ function fullMoney(value: number) {
   return fmtNum(value || 0, 0);
 }
 
+function safeArray<T>(value: T[] | unknown): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function safeChartRows<T extends Record<string, unknown>>(rows: T[]) {
+  return rows.filter((row) =>
+    Object.values(row).every((value) => typeof value !== "number" || Number.isFinite(value))
+  );
+}
+
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -135,9 +145,11 @@ export function IPCAnalyticsTab({ invoices }: Props) {
   const deductionData = useMemo(() => {
     const map = new Map<string, number>();
     invoices.forEach((invoice) => {
-      [...(invoice.deductions_breakdown || []), ...(invoice.approved_deductions_breakdown || [])].forEach((item) => {
-        const name = (item.name || "Other").slice(0, 28);
-        map.set(name, (map.get(name) || 0) + (item.amount || 0));
+      [...safeArray(invoice.deductions_breakdown), ...safeArray(invoice.approved_deductions_breakdown)].forEach((item) => {
+        if (!item || typeof item !== "object") return;
+        const row = item as { name?: string; amount?: number };
+        const name = (row.name || "Other").slice(0, 28);
+        map.set(name, (map.get(name) || 0) + (row.amount || 0));
       });
     });
     return Array.from(map.entries())
@@ -174,7 +186,7 @@ export function IPCAnalyticsTab({ invoices }: Props) {
       row.avgDays = Math.round(row.totalDays / row.count);
       clientDelays.set(client, row);
     });
-    return Array.from(clientDelays.values())
+    return safeChartRows(Array.from(clientDelays.values()))
       .filter((r) => r.count >= 1)
       .sort((a, b) => b.avgDays - a.avgDays)
       .slice(0, 10);
@@ -182,7 +194,7 @@ export function IPCAnalyticsTab({ invoices }: Props) {
 
   // §6.2 Q2 — Collection efficiency ranking by client
   const collectionEffData = useMemo(() => {
-    return clientData
+    return safeChartRows(clientData
       .filter((c) => c.approved > 0)
       .map((c) => ({
         client: c.client,
@@ -191,13 +203,14 @@ export function IPCAnalyticsTab({ invoices }: Props) {
         outstanding: c.outstanding,
         efficiency: c.approved > 0 ? c.collected / c.approved : 0,
       }))
+    )
       .sort((a, b) => a.efficiency - b.efficiency)
       .slice(0, 10);
   }, [clientData]);
 
   // §6.2 Q3 — Projects creating cash stress (high outstanding + low collection rate)
   const cashStressData = useMemo(() => {
-    return financial.projects
+    return safeChartRows(financial.projects
       .filter((p) => p.outstanding > 0 && p.approved_net > 0)
       .map((p) => ({
         project: p.project_code,
@@ -205,6 +218,7 @@ export function IPCAnalyticsTab({ invoices }: Props) {
         collectionRate: p.approved_net > 0 ? p.actual_collected / p.approved_net : 0,
         stressScore: p.outstanding * (1 - (p.approved_net > 0 ? p.actual_collected / p.approved_net : 0)),
       }))
+    )
       .sort((a, b) => b.stressScore - a.stressScore)
       .slice(0, 10);
   }, [financial.projects]);
