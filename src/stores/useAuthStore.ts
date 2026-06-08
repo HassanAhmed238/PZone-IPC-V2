@@ -16,25 +16,31 @@ interface AuthState {
   signOut: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   user: null,
   loading: true,
 
   init: () => {
-    // Listen for auth state changes
+    let initialised = false;
+
+    // Listen for auth state changes (fires AFTER getSession on first load)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        set({
-          session,
-          user: session?.user ?? null,
-          loading: false,
-        });
+        // Only update after initial session is loaded to avoid race condition
+        if (initialised) {
+          set({
+            session,
+            user: session?.user ?? null,
+            loading: false,
+          });
+        }
       }
     );
 
-    // Fetch current session
+    // Fetch current session — this is the authoritative first check
     supabase.auth.getSession().then(({ data: { session } }) => {
+      initialised = true;
       set({
         session,
         user: session?.user ?? null,
