@@ -284,16 +284,16 @@ export default function CollectionsPage() {
           <div className="lg:col-span-2 bg-card rounded-xl border border-border p-4">
             <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
               <TrendingUp size={15} className="text-primary" />
-              التحصيلات الشهرية (ألف ج.م)
+              التحصيلات الشهرية (مليون ج.م)
             </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData.map((m) => ({ ...m, total: Math.round(m.total / 1000) }))}>
+                <LineChart data={monthlyData.map((m) => ({ ...m, total: +(m.total / 1000000).toFixed(2) }))}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                   <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                   <Tooltip
-                    formatter={(v: number) => [`${v} ألف ج.م`, "التحصيل"]}
+                    formatter={(v: number) => [`${v} مليون ج.م`, "التحصيل"]}
                     contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, direction: "rtl" }}
                   />
                   <Line
@@ -323,7 +323,7 @@ export default function CollectionsPage() {
                     .slice(0, 5)
                     .map((p) => ({
                       project: p.project_code.length > 10 ? p.project_code.slice(0, 10) + "…" : p.project_code,
-                      تحصيل: Math.round(p.total_collected / 1000),
+                      تحصيل: +(p.total_collected / 1000000).toFixed(2),
                     }))}
                   layout="vertical"
                   margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
@@ -332,7 +332,7 @@ export default function CollectionsPage() {
                   <XAxis type="number" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                   <YAxis dataKey="project" type="category" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} width={80} />
                   <Tooltip
-                    formatter={(v: number) => [`${v} ألف ج.م`, "التحصيل"]}
+                    formatter={(v: number) => [`${v} مليون ج.م`, "التحصيل"]}
                     contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, direction: "rtl" }}
                   />
                   <Bar dataKey="تحصيل" radius={[0, 4, 4, 0]}>
@@ -389,12 +389,12 @@ export default function CollectionsPage() {
               <div className="p-4 border-b border-border bg-muted/5">
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={monthlyData.map((m) => ({ ...m, total: Math.round(m.total / 1000) }))}>
+                    <BarChart data={monthlyData.map((m) => ({ ...m, total: +(m.total / 1000000).toFixed(2) }))}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="label" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                       <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                       <Tooltip
-                        formatter={(v: number) => [`${v} ألف ج.م`, "التحصيل"]}
+                        formatter={(v: number) => [`${v} مليون ج.م`, "التحصيل"]}
                         contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, direction: "rtl" }}
                       />
                       <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="التحصيل" />

@@ -332,9 +332,9 @@ export default function CashFlowPage() {
     return monthlyTrend.map((m) => {
       return {
         month: m.month,
-        cashIn: Math.round(m.cashIn / 1000),
-        cashOut: Math.round(m.cashOut / 1000),
-        net: Math.round(m.cumulative / 1000),
+        cashIn: +(m.cashIn / 1000000).toFixed(2),
+        cashOut: +(m.cashOut / 1000000).toFixed(2),
+        net: +(m.cumulative / 1000000).toFixed(2),
       };
     });
   }, [monthlyTrend]);
@@ -414,7 +414,7 @@ export default function CashFlowPage() {
         <div className="lg:col-span-2 bg-card rounded-xl border border-border p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
             <Calendar size={15} className="text-primary" />
-            الاتجاه الشهري (ألف ج.م)
+            الاتجاه الشهري (مليون ج.م)
           </h3>
           {chartData.length > 0 ? (
             <div className="h-60">
@@ -426,7 +426,7 @@ export default function CashFlowPage() {
                   <Tooltip
                     formatter={(v: number, name: string) => {
                       const labels: Record<string, string> = { cashIn: "وارد", cashOut: "صادر", net: "صافي تراكمي" };
-                      return [`${v} ألف`, labels[name] || name];
+                      return [`${v} مليون`, labels[name] || name];
                     }}
                     contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12, direction: "rtl" }}
                   />

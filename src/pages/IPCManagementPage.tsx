@@ -241,25 +241,25 @@ function ShareModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <ShareSelect label="Page / Ø§Ù„ØµÙØ­Ø©" value={page} onChange={(v) => setPage(v as typeof page)}
-                  options={[
-                    ["overview", "Overview"],
-                    ["projects", "Projects"],
-                    ["clients", "Clients"],
-                    ["status", "Status"],
-                  ]} />
-                <ShareSelect label="Project / Ø§Ù„Ù…Ø´Ø±ÙˆØ¹" value={projectCode} onChange={setProjectCode}
-                  options={shareChoices.projectsList.map((v) => [v, v])} placeholder="All projects" />
-                <ShareSelect label="Client / Ø§Ù„Ø¹Ù…ÙŠÙ„" value={client} onChange={setClient}
-                  options={shareChoices.clients.map((v) => [v, v])} placeholder="All clients" />
-                <ShareSelect label="Month / Ø§Ù„Ø´Ù‡Ø±" value={month} onChange={setMonth}
-                  options={shareChoices.months.map((v) => [v, v])} placeholder="All months" />
-                <ShareSelect label="Status / Ø§Ù„Ø­Ø§Ù„Ø©" value={status} onChange={setStatus}
-                  options={shareChoices.statuses.map((v) => [v, v])} placeholder="All statuses" />
-                <ShareSelect label="Project Manager / Ù…Ø¯ÙŠØ± Ø§Ù„Ù…Ø´Ø±ÙˆØ¹" value={projectManager} onChange={setProjectManager}
-                  options={shareChoices.managers.map((v) => [v, v])} placeholder="All managers" />
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ShareSelect label="Page / الصفحة" value={page} onChange={(v) => setPage(v as typeof page)}
+                options={[
+                  ["overview", "Overview"],
+                  ["projects", "Projects"],
+                  ["clients", "Clients"],
+                  ["status", "Status"],
+                ]} />
+              <ShareSelect label="Project / المشروع" value={projectCode} onChange={setProjectCode}
+                options={shareChoices.projectsList.map((v) => [v, v])} placeholder="All projects" />
+              <ShareSelect label="Client / العميل" value={client} onChange={setClient}
+                options={shareChoices.clients.map((v) => [v, v])} placeholder="All clients" />
+              <ShareSelect label="Month / الشهر" value={month} onChange={setMonth}
+                options={shareChoices.months.map((v) => [v, v])} placeholder="All months" />
+              <ShareSelect label="Status / الحالة" value={status} onChange={setStatus}
+                options={shareChoices.statuses.map((v) => [v, v])} placeholder="All statuses" />
+              <ShareSelect label="Project Manager / مدير المشروع" value={projectManager} onChange={setProjectManager}
+                options={shareChoices.managers.map((v) => [v, v])} placeholder="All managers" />
+            </div>
 
               <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <ShareSelect

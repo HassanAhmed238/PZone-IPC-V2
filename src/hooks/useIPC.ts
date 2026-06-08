@@ -963,7 +963,11 @@ export interface BoardSnapshotPayload {
 }
 
 export function buildShareUrl(token: string, page?: BoardShareOptions["page"]): string {
-  const url = new URL(`${window.location.origin}/ipc-board/${token}`);
+  const configuredBase = import.meta.env.VITE_PUBLIC_BASE_PATH || import.meta.env.BASE_URL || "/";
+  const baseUrl = configuredBase.startsWith("http")
+    ? configuredBase
+    : `${window.location.origin}${configuredBase.startsWith("/") ? configuredBase : `/${configuredBase}`}`;
+  const url = new URL(`ipc-board/${token}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
   if (page && page !== "overview") url.searchParams.set("page", page);
   return url.toString();
 }
