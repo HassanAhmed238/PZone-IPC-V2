@@ -209,14 +209,11 @@ async function fetchIPCSystemHealth(): Promise<IPCSystemHealth> {
   const localProjectCount = readLocalCount("pzone_ipc_projects");
 
   if (localInvoiceCount > 0 || localProjectCount > 0) {
-    checks.push({
-      key: "local_storage_residue",
-      label: "Browser local fallback data",
-      labelAr: "بيانات محلية داخل المتصفح",
-      status: "warning",
-      detail: `${localInvoiceCount} local invoice(s), ${localProjectCount} local project(s) found in this browser. Treat this as cache only; board and finance truth must come from Supabase.`,
-      required: false,
-    });
+    // Auto-clear stale browser cache — Supabase is the source of truth
+    try {
+      window.localStorage.removeItem("pzone_invoices");
+      window.localStorage.removeItem("pzone_ipc_projects");
+    } catch { /* ignore */ }
   }
 
   const blockingCount = checks.filter((check) => check.status === "error" && check.required).length;
