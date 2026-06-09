@@ -22,7 +22,7 @@ import {
   Building,
   Gauge,
   Layers,
-  Map,
+  Map as MapIcon,
   PieChart as PieIcon,
   Target,
   TrendingUp,
@@ -594,7 +594,7 @@ export function IPCAnalyticsTab({ invoices }: Props) {
     {/* ═══ NEW BOARD-LEVEL SECTION ═══ */}
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
       {/* ─── Sector Revenue Breakdown ─── */}
-      <ChartCard title="Sector Revenue Breakdown" titleAr="توزيع الإيرادات حسب القطاع" icon={Map}>
+      <ChartCard title="Sector Revenue Breakdown" titleAr="توزيع الإيرادات حسب القطاع" icon={MapIcon}>
         <div className="grid grid-cols-2 gap-4">
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
