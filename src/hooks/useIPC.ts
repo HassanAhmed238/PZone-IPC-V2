@@ -1169,6 +1169,23 @@ export function useIPCBoardSnapshot(token: string | null | undefined) {
     queryFn: async () => {
       if (!token) return normalizeBoardSnapshot([]);
 
+      const direct = await (supabase as any)
+        .from("board_share_tokens")
+        .select("snapshot_data, expires_at")
+        .eq("token", token)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      const expiresAt = direct.data?.expires_at ? new Date(direct.data.expires_at).getTime() : null;
+      if (!direct.error && direct.data?.snapshot_data && (!expiresAt || expiresAt > Date.now())) {
+        return normalizeBoardSnapshot(direct.data.snapshot_data);
+      }
+
+      const directMessage = String(direct.error?.message || "");
+      if (direct.error && !/does not exist|schema cache|Could not find|relation .* does not exist/i.test(directMessage)) {
+        throw new Error(direct.error.message);
+      }
+
       const snapshot = await supabase.rpc("get_board_snapshot", {
         input_token: token,
       });

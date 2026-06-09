@@ -205,16 +205,10 @@ async function fetchIPCSystemHealth(): Promise<IPCSystemHealth> {
   checks.push(await checkCreateBoardTokenRpc());
   checks.push(await checkLedgerRpcs());
 
+  // Just report the counts — do NOT clear localStorage here.
+  // The seedImport module relies on these keys to prevent re-seeding loops.
   const localInvoiceCount = readLocalCount("pzone_invoices");
   const localProjectCount = readLocalCount("pzone_ipc_projects");
-
-  if (localInvoiceCount > 0 || localProjectCount > 0) {
-    // Auto-clear stale browser cache — Supabase is the source of truth
-    try {
-      window.localStorage.removeItem("pzone_invoices");
-      window.localStorage.removeItem("pzone_ipc_projects");
-    } catch { /* ignore */ }
-  }
 
   const blockingCount = checks.filter((check) => check.status === "error" && check.required).length;
   const warningCount = checks.filter((check) => check.status === "warning").length;

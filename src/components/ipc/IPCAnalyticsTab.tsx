@@ -51,6 +51,16 @@ function safeArray<T>(value: T[] | unknown): T[] {
   return Array.isArray(value) ? value : [];
 }
 
+function toFiniteNumber(value: unknown) {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function textValue(value: unknown, fallback = "Unknown") {
+  const text = String(value ?? "").trim();
+  return text || fallback;
+}
+
 function safeChartRows<T extends Record<string, unknown>>(rows: T[]) {
   return rows.filter((row) =>
     Object.values(row).every((value) => typeof value !== "number" || Number.isFinite(value))
@@ -129,10 +139,10 @@ export function IPCAnalyticsTab({ invoices }: Props) {
     const order = ["معتمد", "تحت الاعتماد", "في انتظار النسخة المعتمدة", "لم يتم اعتماد السابق", "draft"];
     const map = new Map<string, { status: string; count: number; submitted: number }>();
     invoices.forEach((invoice) => {
-      const status = invoice.status || "Unknown";
+      const status = textValue(invoice.status);
       const row = map.get(status) || { status, count: 0, submitted: 0 };
       row.count += 1;
-      row.submitted += invoice.work_current || invoice.work_total || 0;
+      row.submitted += toFiniteNumber(invoice.work_current || invoice.work_total);
       map.set(status, row);
     });
     return Array.from(map.values()).sort((a, b) => {
@@ -148,8 +158,8 @@ export function IPCAnalyticsTab({ invoices }: Props) {
       [...safeArray(invoice.deductions_breakdown), ...safeArray(invoice.approved_deductions_breakdown)].forEach((item) => {
         if (!item || typeof item !== "object") return;
         const row = item as { name?: string; amount?: number };
-        const name = (row.name || "Other").slice(0, 28);
-        map.set(name, (map.get(name) || 0) + (row.amount || 0));
+        const name = textValue(row.name, "Other").slice(0, 28);
+        map.set(name, (map.get(name) || 0) + toFiniteNumber(row.amount));
       });
     });
     return Array.from(map.entries())
@@ -179,7 +189,7 @@ export function IPCAnalyticsTab({ invoices }: Props) {
         (new Date(inv.approval_date).getTime() - new Date(inv.submitted_date).getTime()) / (1000 * 60 * 60 * 24),
       );
       if (days < 0) return;
-      const client = (inv.client || "Unknown").trim();
+      const client = textValue(inv.client);
       const row = clientDelays.get(client) || { client, totalDays: 0, count: 0, avgDays: 0 };
       row.totalDays += days;
       row.count += 1;
@@ -250,12 +260,12 @@ export function IPCAnalyticsTab({ invoices }: Props) {
       const label = d.toLocaleDateString("en-GB", { month: "short", year: "2-digit" });
       const row = map.get(key) || { month: label, sortKey: key, invoiceCount: 0, submittedValue: 0, approvedValue: 0, collectionValue: 0 };
       row.invoiceCount += 1;
-      row.submittedValue += (inv.work_current || inv.work_total || 0);
-      row.approvedValue += (inv.approved_current || inv.approved_total || 0);
-      row.collectionValue += (inv.total_collections || 0);
+      row.submittedValue += toFiniteNumber(inv.work_current || inv.work_total);
+      row.approvedValue += toFiniteNumber(inv.approved_current || inv.approved_total);
+      row.collectionValue += toFiniteNumber(inv.total_collections);
       map.set(key, row);
     });
-    return Array.from(map.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey));
+    return safeChartRows(Array.from(map.values()).sort((a, b) => a.sortKey.localeCompare(b.sortKey)));
   }, [invoices]);
 
   // ─── NEW: Client Concentration ───

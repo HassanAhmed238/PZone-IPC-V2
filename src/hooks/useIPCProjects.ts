@@ -55,6 +55,22 @@ function mapRow(row: any): IPCProject {
   };
 }
 
+let ipcProjectsTableAvailable: boolean | null = null;
+
+async function readIPCProjectsQuery<T>(query: PromiseLike<{ data: T; error: any }>) {
+  if (ipcProjectsTableAvailable === false) {
+    return { data: null as T | null, error: { message: "ipc_projects table unavailable" } };
+  }
+
+  const result = await query;
+  if (result.error && isTableMissingError(result.error)) {
+    ipcProjectsTableAvailable = false;
+  } else if (!result.error) {
+    ipcProjectsTableAvailable = true;
+  }
+  return result;
+}
+
 /* ─── Hooks ────────────────────────────────────────────────── */
 
 const LS_PROJECTS_KEY = "pzone_ipc_projects";
@@ -74,10 +90,12 @@ export function useIPCProjects() {
     staleTime: CACHE.projects.staleTime,
     gcTime: CACHE.projects.gcTime,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ipc_projects")
-        .select("*")
-        .order("project_code");
+      const { data, error } = await readIPCProjectsQuery(
+        supabase
+          .from("ipc_projects")
+          .select("*")
+          .order("project_code"),
+      );
       if (error) {
         // Table not migrated yet — expected, fall back silently
         if (isTableMissingError(error)) return getLocalProjects();
@@ -97,11 +115,13 @@ export function useIPCProjectByCode(code: string | null) {
     staleTime: CACHE.single.staleTime,
     gcTime: CACHE.single.gcTime,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ipc_projects")
-        .select("*")
-        .eq("project_code", code!)
-        .single();
+      const { data, error } = await readIPCProjectsQuery(
+        supabase
+          .from("ipc_projects")
+          .select("*")
+          .eq("project_code", code!)
+          .single(),
+      );
       if (error) {
         if (isTableMissingError(error)) {
           return getLocalProjects().find((p) => p.project_code === code) || null;
@@ -122,11 +142,13 @@ export function useCreateIPCProject() {
   return useMutation({
     mutationFn: async (input: IPCProjectInput) => {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from("ipc_projects")
-        .insert({ ...input, created_by: user?.id })
-        .select()
-        .single();
+      const { data, error } = await readIPCProjectsQuery(
+        supabase
+          .from("ipc_projects")
+          .insert({ ...input, created_by: user?.id })
+          .select()
+          .single(),
+      );
       if (error) {
         if (isTableMissingError(error)) {
           // Table not migrated — save locally with warning
@@ -156,12 +178,14 @@ export function useUpdateIPCProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...input }: Partial<IPCProjectInput> & { id: string }) => {
-      const { data, error } = await supabase
-        .from("ipc_projects")
-        .update(input)
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error } = await readIPCProjectsQuery(
+        supabase
+          .from("ipc_projects")
+          .update(input)
+          .eq("id", id)
+          .select()
+          .single(),
+      );
       if (error) {
         if (isTableMissingError(error)) {
           toast.warning("Updated offline — ipc_projects table not yet migrated.");
@@ -191,7 +215,9 @@ export function useDeleteIPCProject() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("ipc_projects").delete().eq("id", id);
+      const { error } = await readIPCProjectsQuery(
+        supabase.from("ipc_projects").delete().eq("id", id),
+      );
       if (error) {
         if (isTableMissingError(error)) {
           // Table not migrated — delete from localStorage only
@@ -270,11 +296,13 @@ export async function syncProjectToIPC(project: {
   };
 
   // --- Try Supabase first ---
-  const { data: existing, error: lookupError } = await supabase
-    .from("ipc_projects")
-    .select("id, variation_orders")
-    .eq("project_code", project.project_code)
-    .maybeSingle();
+  const { data: existing, error: lookupError } = await readIPCProjectsQuery(
+    supabase
+      .from("ipc_projects")
+      .select("id, variation_orders")
+      .eq("project_code", project.project_code)
+      .maybeSingle(),
+  );
 
   if (!lookupError || !isTableMissingError(lookupError)) {
     if (existing) {

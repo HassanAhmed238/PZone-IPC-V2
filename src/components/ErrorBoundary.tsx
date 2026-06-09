@@ -63,15 +63,15 @@ export default class ErrorBoundary extends Component<Props, State> {
               </p>
             </div>
 
-            {/* Error details (dev only) */}
-            {import.meta.env.DEV && this.state.error && (
+            {/* Error details */}
+            {this.state.error && (
               <details className="text-left bg-muted/30 rounded-lg p-3 text-xs">
                 <summary className="cursor-pointer text-muted-foreground font-medium mb-1">
-                  Error Details (dev)
+                  Error Details
                 </summary>
                 <pre className="whitespace-pre-wrap text-destructive font-mono break-all">
                   {this.state.error.message}
-                  {this.state.errorInfo?.componentStack && (
+                  {import.meta.env.DEV && this.state.errorInfo?.componentStack && (
                     <>
                       {"\n\nComponent Stack:"}
                       {this.state.errorInfo.componentStack}

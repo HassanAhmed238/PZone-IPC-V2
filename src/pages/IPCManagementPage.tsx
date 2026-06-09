@@ -381,8 +381,6 @@ export default function IPCManagementPage() {
     seedIPCData().then(({ projects: p, ipcs: i }) => {
       if (p > 0 || i > 0) {
         console.log(`[IPC Seed] Imported ${p} projects and ${i} IPCs from Excel data`);
-        // Force react-query to refetch
-        window.location.reload();
       }
     }).catch((err) => console.warn("[IPC Seed] Error:", err));
   }, []);
