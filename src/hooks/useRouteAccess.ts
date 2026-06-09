@@ -13,6 +13,13 @@ const routeAccess: Record<string, string[]> = {
   "/executive": ["admin", "ceo", "chairman"],
   "/master-data": ["admin"],
   "/user-management": ["admin", "ceo", "chairman"],
+  "/ipc-management": ["all"],
+  "/invoices": ["all"],
+  "/ongoing-projects": ["all"],
+  "/stakeholders": ["all"],
+  "/ocr-workspace": ["all"],
+  "/python-console": ["admin"],
+  "/board-dashboard": ["admin", "ceo", "chairman"],
 };
 
 export function useRouteAccess() {
@@ -33,11 +40,13 @@ export function useRouteAccess() {
         allowedRoles = ["admin", "cost_control", "estimator", "finance", "ceo", "chairman"];
       } else if (path.startsWith("/projects/")) {
         allowedRoles = ["admin", "project_manager", "ceo", "chairman"];
+      } else if (path.startsWith("/ipc-board/")) {
+        allowedRoles = ["all"];
       }
     }
 
-    // Default to no access if route not defined
-    if (!allowedRoles) return false;
+    // Default: if route not in the access map, allow access (don't block unlisted pages)
+    if (!allowedRoles) return true;
     
     // "all" means everyone can access
     if (allowedRoles.includes("all")) return true;
