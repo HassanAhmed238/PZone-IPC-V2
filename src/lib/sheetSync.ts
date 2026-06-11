@@ -10,6 +10,12 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 
 const PUBLISHED_ID = "2PACX-1vQ09udoM2gx4dmfXeCbEJ4eytTv0cePRvILMACMyRXEycSmeh8SiZivfvmhnXLQPNnB2BvkEVlG5R-V";
 
+/** In dev mode, route through Vite proxy to bypass CORS. */
+const GSHEET_ORIGIN =
+  import.meta.env.DEV
+    ? "/gsheet-proxy"
+    : "https://docs.google.com";
+
 export interface SheetConfig {
   key: string;
   label: string;
@@ -40,7 +46,7 @@ function decodePublishedName(value: string): string {
 }
 
 function buildPubHtmlUrl(): string {
-  return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pubhtml`;
+  return `${GSHEET_ORIGIN}/spreadsheets/d/e/${PUBLISHED_ID}/pubhtml`;
 }
 
 function getSheetLabel(monthKey: string, configs: SheetConfig[] = activeSheetConfigs): string {
@@ -268,7 +274,7 @@ function rowToInvoice(cells: string[]): SheetInvoice | null {
 }
 
 function buildCsvUrl(gid: string): string {
-  return `https://docs.google.com/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&single=true&output=csv`;
+  return `${GSHEET_ORIGIN}/spreadsheets/d/e/${PUBLISHED_ID}/pub?gid=${gid}&single=true&output=csv`;
 }
 
 function isIpcSheet(rows: string[][]): boolean {

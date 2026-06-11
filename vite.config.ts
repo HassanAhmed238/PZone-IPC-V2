@@ -11,6 +11,14 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/gsheet-proxy": {
+        target: "https://docs.google.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/gsheet-proxy/, ""),
+        secure: true,
+      },
+    },
   },
   plugins: [react()].filter(Boolean),
   resolve: {

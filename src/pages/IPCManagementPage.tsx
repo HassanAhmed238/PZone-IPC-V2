@@ -16,6 +16,8 @@ import { fmtNum, fmtCompact } from "@/lib/utils";
 import { seedIPCData, isSeedDone } from "@/data/seedImport";
 import { useSheetSync, type MonthProgress } from "@/hooks/useSheetSync";
 import { MONTH_CONFIGS } from "@/lib/sheetSync";
+import { useSharedLinks } from "@/hooks/useSharedLinks";
+import { SharedLinksPanel } from "@/components/ipc/SharedLinksPanel";
 
 // PERF-1: Lazy-load heavy tab components (200KB+ total)
 const IPCDashboardTab = lazy(() => import("@/components/ipc/IPCDashboardTab").then(m => ({ default: m.IPCDashboardTab })));
@@ -399,6 +401,8 @@ export default function IPCManagementPage() {
   const [drilldownCode, setDrilldownCode] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
+  const [showLinksPanel, setShowLinksPanel] = useState(false);
+  const { activeCount: sharedLinksCount } = useSharedLinks();
   const [selectedSyncSheets, setSelectedSyncSheets] = useState<string[]>([]);
   const sheetSync = useSheetSync();
 
@@ -491,6 +495,15 @@ export default function IPCManagementPage() {
               <button onClick={() => setShowShareModal(true)}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-none text-xs font-semibold font-sans border border-[#c5a880]/30 text-[#c5a880] hover:bg-[#c5a880]/10 hover:border-[#c5a880] transition-all duration-300">
                 <Share2 size={13} />Share
+              </button>
+              <button onClick={() => setShowLinksPanel(true)}
+                className="relative flex items-center gap-1.5 px-4 py-2.5 rounded-none text-xs font-semibold font-sans border border-[#c5a880]/30 text-[#c5a880] hover:bg-[#c5a880]/10 hover:border-[#c5a880] transition-all duration-300">
+                <Link2 size={13} />Links
+                {sharedLinksCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-emerald-500 px-1 text-[9px] font-black text-white">
+                    {sharedLinksCount}
+                  </span>
+                )}
               </button>
               <button onClick={handleNew}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-none font-sans font-black text-xs uppercase tracking-wider text-black transition-all duration-300"
@@ -586,6 +599,7 @@ export default function IPCManagementPage() {
           />
         )}
         {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
+        {showLinksPanel && <SharedLinksPanel open={showLinksPanel} onClose={() => setShowLinksPanel(false)} />}
 
         {/* ── Sync Modal ── */}
         {showSyncModal && (
