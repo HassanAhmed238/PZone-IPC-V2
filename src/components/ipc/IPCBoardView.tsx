@@ -1476,10 +1476,10 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
               return (
                 <div key={String(label)} className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-600">{label}</span>
-                    <span className="font-mono font-bold text-slate-900">{fmtFull(Number(value))} <span className="text-slate-400">({pct.toFixed(1)}%)</span></span>
+                    <span style={{ color: t.textSecondary }}>{label}</span>
+                    <span className="font-mono font-bold" style={{ color: t.textPrimary }}>{fmtFull(Number(value))} <span style={{ color: t.textMuted }}>({pct.toFixed(1)}%)</span></span>
                   </div>
-                  <div className="h-8 overflow-hidden rounded-lg bg-slate-100">
+                  <div className="h-8 overflow-hidden rounded-lg" style={{ background: t.slicerBg }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(Math.max(pct, 0), 100)}%` }}
@@ -1670,8 +1670,8 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
             <div className="space-y-2">
               {delayData.map((item, index) => (
                 <div key={`${item.label}-${index}`} className="flex items-center gap-3">
-                  <div className="w-40 shrink-0 truncate font-mono text-[10px] text-slate-500">{item.label}</div>
-                  <div className="relative h-6 flex-1 overflow-hidden rounded-md bg-slate-100">
+                  <div className="w-40 shrink-0 truncate font-mono text-[10px]" style={{ color: t.textSecondary }}>{item.label}</div>
+                  <div className="relative h-6 flex-1 overflow-hidden rounded-md" style={{ background: t.slicerBg }}>
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min((item.days / 120) * 100, 100)}%` }}
@@ -1683,7 +1683,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                     </motion.div>
                     <div className="absolute bottom-0 top-0 w-px bg-slate-400/50" style={{ left: `${(42 / 120) * 100}%` }} />
                   </div>
-                  <div className="w-20 text-right font-mono text-[10px] text-slate-400">{fmtMoney(item.net)}</div>
+                  <div className="w-20 text-right font-mono text-[10px]" style={{ color: t.textMuted }}>{fmtMoney(item.net)}</div>
                 </div>
               ))}
             </div>
@@ -1703,7 +1703,8 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                   <button
                     key={project.code}
                     onClick={() => setSelectedProject(project.code)}
-                    className="group w-full rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-blue-300 hover:bg-blue-50/40 hover:shadow-sm"
+                    className="group w-full rounded-lg p-3 text-left transition hover:shadow-sm"
+                    style={{ background: t.cardBg, border: `1px solid ${t.cardBorder}` }}
                   >
                     <div className="mb-2 flex items-center gap-3">
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[10px] font-black" style={{ background: `${COLORS[index % COLORS.length]}14`, color: COLORS[index % COLORS.length] }}>
@@ -1711,14 +1712,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-slate-900">{project.code}</span>
-                          <span className="font-mono text-[10px] text-slate-500">{fmtMoney(project.contractValue)}</span>
+                          <span className="font-bold" style={{ color: t.textPrimary }}>{project.code}</span>
+                          <span className="font-mono text-[10px]" style={{ color: t.textSecondary }}>{fmtMoney(project.contractValue)}</span>
                         </div>
-                        <div className="truncate text-[10px] text-slate-400">{project.name}</div>
+                        <div className="truncate text-[10px]" style={{ color: t.textMuted }}>{project.name}</div>
                       </div>
-                      <span className="text-slate-300 transition group-hover:text-blue-500">›</span>
+                      <span style={{ color: t.textMuted }} className="transition group-hover:text-blue-500">›</span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-1.5 overflow-hidden rounded-full" style={{ background: t.slicerBg }}>
                       <div className="h-full rounded-full" style={{ width: `${Math.min(collectionPct, 100)}%`, background: COLORS[index % COLORS.length] }} />
                     </div>
                   </button>
@@ -1742,14 +1743,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                       borderColor: alert.type === "critical" ? "#fecaca" : "#fde68a",
                     }}
                   >
-                    <div className="mb-1 text-xs font-bold text-slate-800">{alert.message}</div>
-                    <div className="text-[10px] text-slate-500">Open project detail</div>
+                    <div className="mb-1 text-xs font-bold" style={{ color: t.textPrimary }}>{alert.message}</div>
+                    <div className="text-[10px]" style={{ color: t.textSecondary }}>Open project detail</div>
                   </button>
                 ))}
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-slate-200">
-                <div className="grid grid-cols-[1fr_1fr_110px_110px_110px] bg-slate-50 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="overflow-hidden rounded-lg" style={{ border: `1px solid ${t.cardBorder}` }}>
+                <div className="grid grid-cols-[1fr_1fr_110px_110px_110px] px-3 py-2 text-[10px] font-bold uppercase tracking-wider" style={{ background: t.tableHeaderBg, color: t.textSecondary }}>
                   <div>Project</div>
                   <div>Client</div>
                   <div className="text-right">Approved</div>
@@ -1762,13 +1763,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                     <button
                       key={project.code}
                       onClick={() => setSelectedProject(project.code)}
-                      className="grid w-full grid-cols-[1fr_1fr_110px_110px_110px] border-t border-slate-100 px-3 py-2 text-left text-xs transition hover:bg-slate-50/80"
+                      className="grid w-full grid-cols-[1fr_1fr_110px_110px_110px] px-3 py-2 text-left text-xs transition"
+                      style={{ borderTop: `1px solid ${t.tableBorder}` }}
                     >
                       <div className="min-w-0">
-                        <div className="font-bold text-slate-900">{project.code}</div>
-                        <div className="truncate text-[10px] text-slate-400">{project.name}</div>
+                        <div className="font-bold" style={{ color: t.textPrimary }}>{project.code}</div>
+                        <div className="truncate text-[10px]" style={{ color: t.textMuted }}>{project.name}</div>
                       </div>
-                      <div className="truncate text-slate-600">{project.client}</div>
+                      <div className="truncate" style={{ color: t.textSecondary }}>{project.client}</div>
                       <div className="text-right font-mono text-green-600">{fmtMoney(project.approvedNet)}</div>
                       <div className="text-right font-mono text-amber-600">{fmtMoney(project.collected)}</div>
                       <div className="text-right font-mono text-red-600">{fmtMoney(outstanding)}</div>
