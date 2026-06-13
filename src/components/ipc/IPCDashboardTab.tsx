@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -27,6 +27,7 @@ import {
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -35,6 +36,9 @@ import {
 import { fmtCompact, fmtNum, fmtPercent } from "@/lib/utils";
 import { type Invoice } from "@/hooks/useIPC";
 import { type FinancialSnapshotFilters, useFinancialSnapshot } from "@/hooks/useFinancialSnapshot";
+import { useCollectionMutation } from "@/hooks/useCollectionMutation";
+import { CollectionEditPopover, type EditableField } from "@/components/ipc/CollectionEditPopover";
+import { useMonthlyOverrides } from "@/hooks/useMonthlyOverrides";
 
 const COLORS = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#14b8a6"];
 
@@ -74,12 +78,14 @@ function Panel({
   icon: Icon,
   children,
   className = "",
+  badge,
 }: {
   title: string;
   titleAr?: string;
   icon: React.ElementType;
   children: React.ReactNode;
   className?: string;
+  badge?: React.ReactNode;
 }) {
   return (
     <section className={`rounded-xl border border-border bg-card p-5 text-card-foreground shadow-sm ${className}`}>
@@ -87,6 +93,7 @@ function Panel({
         <Icon size={16} className="text-[#c5a880]" />
         <span>{title}</span>
         {titleAr && <span className="text-xs font-medium text-muted-foreground">/ {titleAr}</span>}
+        {badge && <span className="ml-auto">{badge}</span>}
       </h3>
       {children}
     </section>
@@ -165,6 +172,57 @@ export function IPCDashboardTab({ invoices, isLoading, onProjectClick, onShare }
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  // Inline chart editing — collection, submitted, approved
+  const [editingMonth, setEditingMonth] = useState<{
+    monthKey: string;
+    monthLabel: string;
+    currentValue: number;
+    field: EditableField;
+    x: number;
+    y: number;
+  } | null>(null);
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const collectionMutation = useCollectionMutation();
+  const { applyOverrides, setOverride, clearOverride, hasOverride } = useMonthlyOverrides();
+
+  const handleDotClick = useCallback(
+    (field: EditableField, payload: any, cx: number, cy: number) => {
+      const rect = chartContainerRef.current?.getBoundingClientRect();
+      const screenX = (rect?.left ?? 0) + cx;
+      const screenY = (rect?.top ?? 0) + cy;
+      const currentValue =
+        field === "submitted" ? (payload.submitted ?? 0)
+        : field === "approved" ? (payload.approved ?? 0)
+        : (payload.actualCollected ?? 0);
+      setEditingMonth({ monthKey: payload.monthKey, monthLabel: payload.month, currentValue, field, x: screenX, y: screenY });
+    },
+    [],
+  );
+
+  const handleSave = useCallback(
+    (monthKey: string, newTotal: number, currentTotal: number) => {
+      if (!editingMonth) return;
+      const { field } = editingMonth;
+      // Always set the local override for instant display feedback
+      setOverride(field, monthKey, newTotal);
+      setEditingMonth(null);
+      // For collection: also persist to Supabase in the background as audit trail
+      if (field === "collection") {
+        collectionMutation.mutate({ monthKey, newTotal, currentTotal });
+      }
+    },
+    [editingMonth, collectionMutation, setOverride],
+  );
+
+  const handleReset = useCallback(
+    (monthKey: string) => {
+      if (!editingMonth) return;
+      clearOverride(editingMonth.field, monthKey);
+      setEditingMonth(null);
+    },
+    [editingMonth, clearOverride],
+  );
+
   const filterOptions = useMemo(() => {
     const unique = (values: Array<string | null | undefined>) =>
       [...new Set(values.map((value) => (value || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
@@ -189,6 +247,9 @@ export function IPCDashboardTab({ invoices, isLoading, onProjectClick, onShare }
   const financial = useFinancialSnapshot(filters);
   const { portfolio } = financial;
 
+  // Merge all local overrides (submitted, approved, collection) into display data
+  const displayMonthly = applyOverrides(financial.monthly);
+
   const clientEfficiency = useMemo(() => {
     const map = new Map<string, { client: string; approved: number; collected: number; outstanding: number; efficiency: number }>();
     financial.projects.forEach((row) => {
@@ -202,7 +263,7 @@ export function IPCDashboardTab({ invoices, isLoading, onProjectClick, onShare }
     return Array.from(map.values()).sort((a, b) => b.outstanding - a.outstanding).slice(0, 10);
   }, [financial.projects]);
 
-  const cashChart = financial.monthly.map((row) => ({
+  const cashChart = displayMonthly.map((row) => ({
     month: row.month,
     "Actual In": row.actualCollected,
     "Actual Out": -row.actualCashOut,
@@ -270,20 +331,150 @@ export function IPCDashboardTab({ invoices, isLoading, onProjectClick, onShare }
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel title="Submitted vs Approved vs Collected" titleAr="المقدم والمعتمد والمحصل" icon={LineChartIcon}>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={financial.monthly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tickFormatter={money} tick={{ fontSize: 11 }} />
-              <Tooltip content={<ChartTooltip />} />
-              <Legend />
-              <Line type="monotone" dataKey="submitted" name="Submitted" stroke="#3b82f6" strokeWidth={2} />
-              <Line type="monotone" dataKey="approved" name="Approved" stroke="#22c55e" strokeWidth={2} />
-              <Line type="monotone" dataKey="actualCollected" name="Collected" stroke="#f59e0b" strokeWidth={2} />
-              <Line type="monotone" dataKey="forecastCashIn" name="Forecast In" stroke="#14b8a6" strokeDasharray="5 4" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+        <Panel
+          title="Submitted vs Approved vs Collected"
+          titleAr="المقدم والمعتمد والمحصل"
+          icon={LineChartIcon}
+          badge={
+            <span className="flex items-center gap-2 rounded-lg border border-yellow-400/40 bg-yellow-400/10 px-3 py-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400/80">TOTAL</span>
+              <span className="font-mono text-sm font-black text-yellow-300">
+                {fullMoney(portfolio.total_collections)}
+              </span>
+            </span>
+          }
+        >
+          <div className="text-[10px] text-muted-foreground mb-2 flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#3b82f6]"></span>
+              <span>Click dots to edit</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#22c55e]"></span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#f59e0b]"></span>
+            </span>
+          </div>
+          <div ref={chartContainerRef}>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={displayMonthly}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                <YAxis tickFormatter={money} tick={{ fontSize: 11 }} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend />
+                {portfolio.total_collections > 0 && (
+                  <ReferenceLine
+                    y={portfolio.total_collections}
+                    stroke="#fde047"
+                    strokeDasharray="6 3"
+                    strokeWidth={1.5}
+                    label={{
+                      value: `TOTAL ${money(portfolio.total_collections)}`,
+                      position: "insideTopRight",
+                      fill: "#fde047",
+                      fontSize: 11,
+                      fontWeight: 900,
+                    }}
+                  />
+                )}
+                <Line
+                  type="monotone"
+                  dataKey="submitted"
+                  name="Submitted"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle key={key} cx={cx} cy={cy} r={5} fill="#3b82f6" stroke="#fff" strokeWidth={2}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleDotClick("submitted", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                  activeDot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle key={key} cx={cx} cy={cy} r={7} fill="#3b82f6" stroke="#fff" strokeWidth={3}
+                        style={{ cursor: "pointer", filter: "drop-shadow(0 0 4px rgba(59,130,246,0.6))" }}
+                        onClick={() => handleDotClick("submitted", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="approved"
+                  name="Approved"
+                  stroke="#22c55e"
+                  strokeWidth={2}
+                  dot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle key={key} cx={cx} cy={cy} r={5} fill="#22c55e" stroke="#fff" strokeWidth={2}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleDotClick("approved", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                  activeDot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle key={key} cx={cx} cy={cy} r={7} fill="#22c55e" stroke="#fff" strokeWidth={3}
+                        style={{ cursor: "pointer", filter: "drop-shadow(0 0 4px rgba(34,197,94,0.6))" }}
+                        onClick={() => handleDotClick("approved", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="actualCollected"
+                  name="Collected"
+                  stroke="#f59e0b"
+                  strokeWidth={2}
+                  dot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle
+                        key={key} cx={cx} cy={cy} r={6} fill="#f59e0b" stroke="#fff" strokeWidth={2}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleDotClick("collection", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                  activeDot={(dotProps: any) => {
+                    const { cx, cy, payload, key } = dotProps;
+                    return (
+                      <circle
+                        key={key} cx={cx} cy={cy} r={8} fill="#f59e0b" stroke="#fff" strokeWidth={3}
+                        style={{ cursor: "pointer", filter: "drop-shadow(0 0 4px rgba(245,158,11,0.5))" }}
+                        onClick={() => handleDotClick("collection", payload, cx, cy)}
+                      />
+                    );
+                  }}
+                />
+                <Line type="monotone" dataKey="forecastCashIn" name="Forecast In" stroke="#14b8a6" strokeDasharray="5 4" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          {editingMonth && (
+            <CollectionEditPopover
+              x={editingMonth.x}
+              y={editingMonth.y}
+              monthLabel={editingMonth.monthLabel}
+              monthKey={editingMonth.monthKey}
+              currentValue={editingMonth.currentValue}
+              field={editingMonth.field}
+              isOverridden={hasOverride(editingMonth.field, editingMonth.monthKey)}
+              onSave={handleSave}
+              onReset={handleReset}
+              onClose={() => setEditingMonth(null)}
+              isSaving={editingMonth.field === "collection" && collectionMutation.isPending}
+            />
+          )}
         </Panel>
 
         <Panel title="Actual + Forecast Cashflow" titleAr="التدفق النقدي الفعلي والمتوقع" icon={Wallet}>

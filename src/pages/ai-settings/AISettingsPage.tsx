@@ -191,10 +191,8 @@ const ALL_MODELS: AIModel[] = [
 const ACTIVE_ANALYSIS_KEY = "preferred_ai_provider";
 const ACTIVE_AUTOMATION_KEY = "preferred_automation_model";
 
-// Built-in default API keys (pre-configured)
-const BUILT_IN_KEYS: Record<string, string> = {
-  api_key_gemini: "AIzaSyAWiW8PDccWe3-DgBcSrwh8jSEMcPyqfV4",
-};
+// No built-in keys — require env or user-provided keys
+const BUILT_IN_KEYS: Record<string, string> = {};
 
 function getApiKeyValue(model: AIModel): string {
   if (model.storageKey === "__edge_function__") return "__SERVER__";

@@ -1,12 +1,15 @@
-import { useParams, useSearchParams } from "react-router-dom";
+﻿import { useParams, useSearchParams } from "react-router-dom";
 import { IPCBoardView } from "@/components/ipc/IPCBoardView";
 import { AlertCircle } from "lucide-react";
+import { decodeOverridesParam } from "@/hooks/useMonthlyOverrides";
 
 export default function IPCBoardPage() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const signedUrl = searchParams.get("s"); // signed URL passed in query param
   const page = searchParams.get("page");
+  const rawOv = searchParams.get("ov");
+  const initialOverrides = rawOv ? (decodeOverridesParam(rawOv) ?? undefined) : undefined;
 
   if (!token) {
     return (
@@ -21,5 +24,5 @@ export default function IPCBoardPage() {
     );
   }
 
-  return <IPCBoardView token={token} signedUrl={signedUrl} initialPage={page} />;
+  return <IPCBoardView token={token} signedUrl={signedUrl} initialPage={page} initialOverrides={initialOverrides} />;
 }

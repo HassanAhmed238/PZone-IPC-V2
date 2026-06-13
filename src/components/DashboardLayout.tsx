@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AppSidebar from "./AppSidebar";
 import AppHeader from "./AppHeader";
+import WhatsNewDialog from "./WhatsNewDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function DashboardLayout() {
@@ -12,6 +13,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-background">
+      <WhatsNewDialog />
       <AppSidebar 
         collapsed={collapsed} 
         onToggle={() => setCollapsed(!collapsed)} 

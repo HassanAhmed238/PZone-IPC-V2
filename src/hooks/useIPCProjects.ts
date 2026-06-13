@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isTableMissingError, createTableAvailabilityGuard } from "@/lib/supabase-table-check";
 
 /* ─── Cache Configuration ─────────────────────────────────── */
 const CACHE = {
@@ -40,11 +41,8 @@ export type IPCProjectInput = Omit<IPCProject, "id" | "created_at" | "updated_at
 
 /* ─── Helpers ──────────────────────────────────────────────── */
 
-/** Detect Supabase errors that mean the table/schema is not yet migrated */
-function isTableMissingError(error: any): boolean {
-  const msg = String(error?.message || "");
-  return /does not exist|schema cache|Could not find|relation .* does not exist/i.test(msg);
-}
+// Re-exported from shared utility so existing consumers and tests keep working
+export { isTableMissingError } from "@/lib/supabase-table-check";
 
 function mapRow(row: any): IPCProject {
   return {
@@ -55,18 +53,22 @@ function mapRow(row: any): IPCProject {
   };
 }
 
-let ipcProjectsTableAvailable: boolean | null = null;
+const projectTableGuard = createTableAvailabilityGuard("ipc_projects");
 
-async function readIPCProjectsQuery<T>(query: PromiseLike<{ data: T; error: any }>) {
-  if (ipcProjectsTableAvailable === false) {
+export async function readIPCProjectsQuery<T>(query: PromiseLike<{ data: T; error: any }>) {
+  const cachedState = projectTableGuard.cachedState;
+
+  if (cachedState === false) {
     return { data: null as T | null, error: { message: "ipc_projects table unavailable" } };
   }
 
   const result = await query;
   if (result.error && isTableMissingError(result.error)) {
-    ipcProjectsTableAvailable = false;
-  } else if (!result.error) {
-    ipcProjectsTableAvailable = true;
+    projectTableGuard.markUnavailable();
+    return result;
+  }
+  if (!result.error) {
+    projectTableGuard.markAvailable();
   }
   return result;
 }
@@ -97,10 +99,12 @@ export function useIPCProjects() {
           .order("project_code"),
       );
       if (error) {
-        // Table not migrated yet — expected, fall back silently
+        // Only fall back silently when the table hasn't been migrated yet.
         if (isTableMissingError(error)) return getLocalProjects();
-        console.warn("[IPCProjects] Unexpected query error:", error.message);
-        return getLocalProjects();
+        // Any other error (RLS, network, etc.) is surfaced — do not silently
+        // serve stale local data as board/finance source of truth.
+        console.error("[IPCProjects] DB query failed:", error.message, error);
+        throw new Error(`Failed to load IPC projects: ${error.message}`);
       }
       return (data || []).map(mapRow);
     },
@@ -128,8 +132,9 @@ export function useIPCProjectByCode(code: string | null) {
         }
         // PGRST116 = no rows found — not an error, just empty
         if (error.code === "PGRST116") return null;
-        console.warn("[IPCProjects] Fetch error:", error.message);
-        return getLocalProjects().find((p) => p.project_code === code) || null;
+        // Surface all other DB errors (RLS, network, etc.).
+        console.error("[IPCProjects] Fetch by code failed:", error.message, error);
+        throw new Error(`Failed to load project ${code}: ${error.message}`);
       }
       return mapRow(data);
     },

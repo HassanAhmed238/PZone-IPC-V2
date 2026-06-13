@@ -349,11 +349,10 @@ async function analyzeContractDirect(
   onProgress?: ProgressCallback,
   model?: GeminiModelId
 ): Promise<AnalysisResult> {
-  const BUILT_IN_KEY = "AIzaSyAWiW8PDccWe3-DgBcSrwh8jSEMcPyqfV4";
-  const apiKey = localStorage.getItem("api_key_gemini") || BUILT_IN_KEY;
+  const apiKey = localStorage.getItem("api_key_gemini") || import.meta.env.VITE_GEMINI_API_KEY || "";
   if (!apiKey) {
     throw new Error(
-      "No Gemini API key found. Go to AI Model Settings → API Keys tab and add your Gemini API key, or switch to Edge Function mode."
+      "No Gemini API key found. Go to AI Model Settings → API Keys tab and add your Gemini API key, or set the VITE_GEMINI_API_KEY environment variable, or switch to Edge Function mode."
     );
   }
 

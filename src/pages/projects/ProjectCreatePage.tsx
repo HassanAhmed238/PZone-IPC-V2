@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, Check, Building2, FileText, Import, Target, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/useAuthStore";
 import { useCreateProject, useClients } from "@/hooks/useProjects";
 import StepBasicInfo from "@/components/projects/wizard/StepBasicInfo";
 import StepContract from "@/components/projects/wizard/StepContract";

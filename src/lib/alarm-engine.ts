@@ -6,6 +6,17 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+function groupBy<T>(arr: T[], key: keyof T): Map<string, T[]> {
+  const map = new Map<string, T[]>();
+  for (const item of arr) {
+    const k = String(item[key]);
+    const list = map.get(k);
+    if (list) list.push(item);
+    else map.set(k, [item]);
+  }
+  return map;
+}
+
 interface AlarmCheck {
   contractId: string;
   contractTitle: string;
@@ -33,6 +44,40 @@ export async function checkAlarms(): Promise<AlarmCheck[]> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // ── Batch-fetch to avoid N+1 queries ──
+    const contractIds = [...new Set((alarms as any[]).map((a: any) => a.contracts?.id).filter(Boolean))] as string[];
+
+    // Batch: contract_ipcs with pending status
+    const { data: allIPCs } = contractIds.length
+      ? await supabase
+          .from("contract_ipcs")
+          .select("id, ipc_number, submission_date, contract_id")
+          .in("contract_id", contractIds)
+          .in("status", ["submitted", "under_review"])
+      : { data: [] as any[] };
+    const ipcsByContract = groupBy(allIPCs || [], "contract_id" as any);
+
+    // Batch: current schedule_baselines
+    const { data: allBaselines } = contractIds.length
+      ? await supabase
+          .from("schedule_baselines")
+          .select("id, contract_id")
+          .in("contract_id", contractIds)
+          .eq("is_current", true)
+      : { data: [] as any[] };
+    const baselineByContract = new Map<string, any>();
+    for (const b of allBaselines || []) baselineByContract.set(b.contract_id, b);
+
+    // Batch: schedule_activities for all found baselines
+    const baselineIds = (allBaselines || []).map((b: any) => b.id);
+    const { data: allActivities } = baselineIds.length
+      ? await supabase
+          .from("schedule_activities")
+          .select("id, activity_name, planned_finish, status, baseline_id")
+          .in("baseline_id", baselineIds)
+      : { data: [] as any[] };
+    const activitiesByBaseline = groupBy(allActivities || [], "baseline_id" as any);
+
     for (const alarm of alarms as any[]) {
       const contract = alarm.contracts;
       if (!contract) continue;
@@ -58,26 +103,20 @@ export async function checkAlarms(): Promise<AlarmCheck[]> {
 
       if (alarm.alarm_type === "ipc_overdue") {
         // Check if there are submitted IPCs older than triggerDays
-        const { data: pendingIPCs } = await supabase
-          .from("contract_ipcs")
-          .select("id, ipc_number, submission_date")
-          .eq("contract_id", contract.id)
-          .in("status", ["submitted", "under_review"]);
+        const pendingIPCs = ipcsByContract.get(contract.id) || [];
 
-        if (pendingIPCs) {
-          for (const ipc of pendingIPCs) {
-            if (ipc.submission_date) {
-              const submDate = new Date(ipc.submission_date);
-              const daysPending = Math.ceil((today.getTime() - submDate.getTime()) / 86400000);
-              if (daysPending >= triggerDays) {
-                triggered.push({
-                  contractId: contract.id,
-                  contractTitle: contract.title,
-                  alarmType: "ipc_overdue",
-                  message: `⚠️ المستخلص #${ipc.ipc_number} للعقد "${contract.title}" معلق منذ ${daysPending} يوم`,
-                  severity: daysPending >= triggerDays * 2 ? "critical" : "warning",
-                });
-              }
+        for (const ipc of pendingIPCs) {
+          if (ipc.submission_date) {
+            const submDate = new Date(ipc.submission_date);
+            const daysPending = Math.ceil((today.getTime() - submDate.getTime()) / 86400000);
+            if (daysPending >= triggerDays) {
+              triggered.push({
+                contractId: contract.id,
+                contractTitle: contract.title,
+                alarmType: "ipc_overdue",
+                message: `⚠️ المستخلص #${ipc.ipc_number} للعقد "${contract.title}" معلق منذ ${daysPending} يوم`,
+                severity: daysPending >= triggerDays * 2 ? "critical" : "warning",
+              });
             }
           }
         }
@@ -85,21 +124,15 @@ export async function checkAlarms(): Promise<AlarmCheck[]> {
 
       if (alarm.alarm_type === "schedule_delay") {
         // Check for delayed activities in current baseline
-        const { data: baseline } = await supabase
-          .from("schedule_baselines")
-          .select("id")
-          .eq("contract_id", contract.id)
-          .eq("is_current", true)
-          .maybeSingle();
+        const baseline = baselineByContract.get(contract.id);
 
         if (baseline) {
-          const { data: delayedActivities } = await supabase
-            .from("schedule_activities")
-            .select("id, activity_name, planned_finish, status")
-            .eq("baseline_id", baseline.id)
-            .in("status", ["delayed", "critical"]);
+          const allActs = activitiesByBaseline.get(baseline.id) || [];
+          const delayedActivities = allActs.filter(
+            (a: any) => a.status === "delayed" || a.status === "critical"
+          );
 
-          if (delayedActivities && delayedActivities.length > 0) {
+          if (delayedActivities.length > 0) {
             triggered.push({
               contractId: contract.id,
               contractTitle: contract.title,
@@ -113,26 +146,24 @@ export async function checkAlarms(): Promise<AlarmCheck[]> {
 
       if (alarm.alarm_type === "milestone_approaching") {
         // Check for activities finishing within triggerDays
-        const { data: baseline } = await supabase
-          .from("schedule_baselines")
-          .select("id")
-          .eq("contract_id", contract.id)
-          .eq("is_current", true)
-          .maybeSingle();
+        const baseline = baselineByContract.get(contract.id);
 
         if (baseline) {
           const futureDate = new Date(today);
           futureDate.setDate(futureDate.getDate() + triggerDays);
+          const todayStr = today.toISOString().split("T")[0];
+          const futureStr = futureDate.toISOString().split("T")[0];
 
-          const { data: upcomingActivities } = await supabase
-            .from("schedule_activities")
-            .select("id, activity_name, planned_finish")
-            .eq("baseline_id", baseline.id)
-            .neq("status", "completed")
-            .gte("planned_finish", today.toISOString().split("T")[0])
-            .lte("planned_finish", futureDate.toISOString().split("T")[0]);
+          const allActs = activitiesByBaseline.get(baseline.id) || [];
+          const upcomingActivities = allActs.filter(
+            (a: any) =>
+              a.status !== "completed" &&
+              a.planned_finish &&
+              a.planned_finish >= todayStr &&
+              a.planned_finish <= futureStr
+          );
 
-          if (upcomingActivities && upcomingActivities.length > 0) {
+          if (upcomingActivities.length > 0) {
             for (const act of upcomingActivities) {
               const daysUntil = Math.ceil(
                 (new Date(act.planned_finish!).getTime() - today.getTime()) / 86400000

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Area,
@@ -37,6 +37,7 @@ import {
 import { fmtCompact, fmtNum, fmtPercent } from "@/lib/utils";
 import { type Invoice, useIPCBoardSnapshot } from "@/hooks/useIPC";
 import { computeFinancialSnapshot } from "@/hooks/useFinancialSnapshot";
+import { useMonthlyOverrides } from "@/hooks/useMonthlyOverrides";
 
 const COLORS = ["#667eea", "#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#06b6d4", "#ec4899", "#14b8a6"];
 const AGING_COLORS = ["#22c55e", "#f59e0b", "#f97316", "#ef4444"];
@@ -603,13 +604,22 @@ interface Props {
   token: string;
   signedUrl?: string | null;
   initialPage?: string | null;
+  initialOverrides?: Record<string, number>;
 }
 
-export function IPCBoardView({ token, signedUrl, initialPage }: Props) {
+export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }: Props) {
   const { data: boardSnapshot, isLoading, error } = useIPCBoardSnapshot(token);
   const allInvoices = boardSnapshot?.invoices || [];
   const [slicers, setSlicers] = useState<BoardSlicerState>(DEFAULT_SLICERS);
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+
+  // Seed overrides from URL param so shared links show edited values
+  const { overrides, setOverride, applyOverrides } = useMonthlyOverrides();
+  useEffect(() => {
+    if (!initialOverrides) return;
+    Object.entries(initialOverrides).forEach(([key, value]) => setOverride(key, value));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const slicerOptions = useMemo(() => {
     const months = Array.from(new Set(allInvoices.map(invoiceMonthKey).filter(Boolean) as string[]))
@@ -719,8 +729,10 @@ export function IPCBoardView({ token, signedUrl, initialPage }: Props) {
     };
   }, [financial, invoices]);
 
+  const displayMonthly = useMemo(() => applyOverrides(financial.monthly), [financial.monthly, overrides]);
+
   const monthlyTrend = useMemo(() => {
-    return financial.monthly.map((row) => ({
+    return displayMonthly.map((row) => ({
       key: row.monthKey,
       month: row.month,
       submitted: row.submitted,
@@ -728,10 +740,10 @@ export function IPCBoardView({ token, signedUrl, initialPage }: Props) {
       collected: row.actualCollected,
       forecast: row.forecastCashIn,
     }));
-  }, [financial.monthly]);
+  }, [displayMonthly]);
 
   const cashPositionTrend = useMemo(() => {
-    return financial.monthly.map((row) => ({
+    return displayMonthly.map((row) => ({
       key: row.monthKey,
       month: row.month,
       actualIn: row.actualCollected,
@@ -740,7 +752,7 @@ export function IPCBoardView({ token, signedUrl, initialPage }: Props) {
       forecastOut: -row.forecastCashOut,
       netForecast: row.netForecast,
     }));
-  }, [financial.monthly]);
+  }, [displayMonthly]);
 
   const sectorData = useMemo(() => {
     const map = new Map<string, { sector: string; contractValue: number; submitted: number; approved: number }>();
@@ -888,14 +900,42 @@ export function IPCBoardView({ token, signedUrl, initialPage }: Props) {
   }
 
   if (error || allInvoices.length === 0) {
+    const errMsg = String((error as any)?.message || "");
+    const isRevoked = errMsg.startsWith("REVOKED:");
+    const isExpired = errMsg.startsWith("EXPIRED:");
+    const isNotFound = errMsg.startsWith("NOT_FOUND:");
+
+    const title = isRevoked
+      ? "Link Revoked — تم إلغاء الرابط"
+      : isExpired
+        ? "Link Expired — انتهت صلاحية الرابط"
+        : isNotFound
+          ? "Invalid Link — رابط غير صالح"
+          : "No shared dashboard data";
+
+    const subtitle = isRevoked
+      ? "This share link has been revoked by the administrator. Please request a new link."
+      : isExpired
+        ? "This share link has expired. Please request a new link from the project administrator."
+        : isNotFound
+          ? "This share link does not exist or was never created."
+          : "This link has no online snapshot data. Regenerate the share link.";
+
+    const borderColor = isRevoked ? "rgba(239,68,68,0.3)" : isExpired ? "rgba(245,158,11,0.3)" : "rgba(239,68,68,0.2)";
+    const bgColor = isRevoked ? "rgba(239,68,68,0.08)" : isExpired ? "rgba(245,158,11,0.08)" : "rgba(239,68,68,0.05)";
+    const iconColor = isRevoked ? "text-red-400" : isExpired ? "text-amber-400" : "text-red-300";
+
     return (
       <div className="flex min-h-screen items-center justify-center p-6" style={{ background: "linear-gradient(135deg, #020817, #0a1628)" }}>
-        <div className="max-w-lg rounded-2xl border border-red-500/20 bg-red-500/5 p-6 text-center">
-          <AlertTriangle className="mx-auto mb-3 text-red-300" />
-          <h1 className="mb-2 text-lg font-black text-white">No shared dashboard data</h1>
-          <p className="text-sm text-slate-400">
-            This link has no online snapshot data. Regenerate the share link after running the board sharing SQL in Supabase.
-          </p>
+        <div className="max-w-lg rounded-2xl border p-8 text-center" style={{ borderColor, background: bgColor }}>
+          <AlertTriangle className={`mx-auto mb-4 ${iconColor}`} size={48} />
+          <h1 className="mb-2 text-xl font-black text-white">{title}</h1>
+          <p className="text-sm text-slate-400 leading-relaxed">{subtitle}</p>
+          {(isRevoked || isExpired) && (
+            <p className="mt-4 text-xs text-slate-600">
+              Contact the link owner to generate a fresh share link from the IPC Command Center.
+            </p>
+          )}
         </div>
       </div>
     );

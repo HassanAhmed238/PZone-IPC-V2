@@ -19,6 +19,7 @@ import { useModuleAccess } from "@/hooks/useModuleAccess";
 // Hardcoded fallback in case DB is empty or still loading
 const fallbackModuleAccess: Record<string, string[]> = {
   "/": ["all"],
+  "/settings": ["all"],
   "/projects": ["project_manager", "ceo", "chairman"],
   "/ipc-management": ["finance", "cost_control", "contract_admin", "ipc_clerk", "ceo", "chairman"],
   "/collections": ["finance", "ceo", "chairman"],
@@ -176,7 +177,7 @@ export default function AppSidebar({ collapsed, onToggle, mobileMenuOpen, onMobi
 
       {/* Footer */}
       <div className="border-t border-sidebar-border p-2 space-y-0.5">
-        <NavLink to="/user-management" onClick={onMobileClose} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:text-sidebar-primary-foreground hover:bg-sidebar-accent/50 transition-colors w-full">
+        <NavLink to="/settings" onClick={onMobileClose} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground hover:text-sidebar-primary-foreground hover:bg-sidebar-accent/50 transition-colors w-full">
           <Settings size={18} />
           {!collapsed && <span>Settings</span>}
         </NavLink>

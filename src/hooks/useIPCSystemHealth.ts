@@ -24,9 +24,20 @@ export interface IPCSystemHealth {
 
 const SCHEMA_CHECKS = [
   {
+    key: "ipc_projects",
+    label: "IPC projects table",
+    // \u062C\u062F\u0648\u0644 \u0645\u0634\u0627\u0631\u064A\u0639 IPC = "جدول مشاريع IPC"
+    labelAr: "\u062C\u062F\u0648\u0644 \u0645\u0634\u0627\u0631\u064A\u0639 IPC",
+    table: "ipc_projects",
+    columns: "id,project_code,project_name,client,sector,contract_value,is_active",
+    required: true,
+    hint: "20260611_live_schema_repair.sql",
+  },
+  {
     key: "invoices",
     label: "IPC invoices table",
-    labelAr: "جدول المستخلصات",
+    // \u062C\u062F\u0648\u0644 \u0627\u0644\u0645\u0633\u062A\u062E\u0644\u0635\u0627\u062A = "جدول المستخلصات"
+    labelAr: "\u062C\u062F\u0648\u0644 \u0627\u0644\u0645\u0633\u062A\u062E\u0644\u0635\u0627\u062A",
     table: "invoices",
     columns:
       "id,project_code,project_name,client,contract_value,invoice_number,work_current,work_total,approved_current,approved_total,approved_net_total,total_collections,submitted_date,approval_date,status,approved_tax_amount,ipc_project_id",
@@ -36,7 +47,8 @@ const SCHEMA_CHECKS = [
   {
     key: "ongoing_projects",
     label: "Project master table",
-    labelAr: "جدول المشاريع",
+    // \u062C\u062F\u0648\u0644 \u0627\u0644\u0645\u0634\u0627\u0631\u064A\u0639 = "جدول المشاريع"
+    labelAr: "\u062C\u062F\u0648\u0644 \u0627\u0644\u0645\u0634\u0627\u0631\u064A\u0639",
     table: "ongoing_projects",
     columns: "id,project_code,project_name,client_name,project_status,project_manager,contract_value,currency",
     required: true,
@@ -45,7 +57,8 @@ const SCHEMA_CHECKS = [
   {
     key: "collection_transactions",
     label: "Collection ledger",
-    labelAr: "دفتر التحصيلات",
+    // \u062F\u0641\u062A\u0631 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A = "دفتر التحصيلات"
+    labelAr: "\u062F\u0641\u062A\u0631 \u0627\u0644\u062A\u062D\u0635\u064A\u0644\u0627\u062A",
     table: "collection_transactions",
     columns: "id,project_code,collection_date,collection_month,amount,currency,dedupe_key,status",
     required: true,
@@ -54,7 +67,8 @@ const SCHEMA_CHECKS = [
   {
     key: "cash_flow_transactions",
     label: "Actual cashflow ledger",
-    labelAr: "دفتر التدفقات الفعلية",
+    // \u062F\u0641\u062A\u0631 \u0627\u0644\u062A\u062F\u0641\u0642\u0627\u062A \u0627\u0644\u0641\u0639\u0644\u064A\u0629 = "دفتر التدفقات الفعلية"
+    labelAr: "\u062F\u0641\u062A\u0631 \u0627\u0644\u062A\u062F\u0641\u0642\u0627\u062A \u0627\u0644\u0641\u0639\u0644\u064A\u0629",
     table: "cash_flow_transactions",
     columns: "id,transaction_date,transaction_month,project_code,type,category,amount,currency,status",
     required: true,
@@ -63,7 +77,8 @@ const SCHEMA_CHECKS = [
   {
     key: "cash_flow_forecasts",
     label: "Cashflow forecasts",
-    labelAr: "توقعات التدفقات النقدية",
+    // \u062A\u0648\u0642\u0639\u0627\u062A \u0627\u0644\u062A\u062F\u0641\u0642\u0627\u062A \u0627\u0644\u0646\u0642\u062F\u064A\u0629 = "توقعات التدفقات النقدية"
+    labelAr: "\u062A\u0648\u0642\u0639\u0627\u062A \u0627\u0644\u062A\u062F\u0641\u0642\u0627\u062A \u0627\u0644\u0646\u0642\u062F\u064A\u0629",
     table: "cash_flow_forecasts",
     columns: "id,forecast_date,forecast_month,project_code,type,category,amount,probability_pct,status",
     required: true,
@@ -72,16 +87,18 @@ const SCHEMA_CHECKS = [
   {
     key: "board_share_tokens",
     label: "Online board sharing",
-    labelAr: "مشاركة المجلس أونلاين",
+    // \u0645\u0634\u0627\u0631\u0643\u0629 \u0627\u0644\u0645\u062C\u0644\u0633 \u0623\u0648\u0646\u0644\u0627\u064A\u0646 = "مشاركة المجلس أونلاين"
+    labelAr: "\u0645\u0634\u0627\u0631\u0643\u0629 \u0627\u0644\u0645\u062C\u0644\u0633 \u0623\u0648\u0646\u0644\u0627\u064A\u0646",
     table: "board_share_tokens",
     columns: "token,snapshot_data,expires_at,is_active,created_by,created_at",
     required: true,
-    hint: "20260610_board_share_snapshot_repair.sql",
+    hint: "20260611_live_schema_repair.sql",
   },
   {
     key: "contract_module_access",
     label: "RACI module access",
-    labelAr: "صلاحيات الوحدات",
+    // \u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0627\u0644\u0648\u062D\u062F\u0627\u062A = "صلاحيات الوحدات"
+    labelAr: "\u0635\u0644\u0627\u062D\u064A\u0627\u062A \u0627\u0644\u0648\u062D\u062F\u0627\u062A",
     table: "contract_module_access",
     columns: "module_path,module_label,allowed_roles,updated_at",
     required: true,
@@ -90,7 +107,8 @@ const SCHEMA_CHECKS = [
   {
     key: "user_roles",
     label: "User roles",
-    labelAr: "أدوار المستخدمين",
+    // \u0623\u062F\u0648\u0627\u0631 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646 = "أدوار المستخدمين"
+    labelAr: "\u0623\u062F\u0648\u0627\u0631 \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646",
     table: "user_roles",
     columns: "user_id,role,created_at",
     required: true,
@@ -99,7 +117,8 @@ const SCHEMA_CHECKS = [
   {
     key: "profiles",
     label: "User profiles",
-    labelAr: "ملفات المستخدمين",
+    // \u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646 = "ملفات المستخدمين"
+    labelAr: "\u0645\u0644\u0641\u0627\u062A \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646",
     table: "profiles",
     columns: "user_id,full_name,department,created_at",
     required: false,
@@ -146,11 +165,12 @@ async function checkBoardSnapshotRpc(): Promise<IPCHealthCheck> {
   return {
     key: "get_board_snapshot_rpc",
     label: "Board snapshot RPC",
-    labelAr: "دالة قراءة رابط المشاركة",
+    // \u062F\u0627\u0644\u0629 \u0642\u0631\u0627\u0621\u0629 \u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629 = "دالة قراءة رابط المشاركة"
+    labelAr: "\u062F\u0627\u0644\u0629 \u0642\u0631\u0627\u0621\u0629 \u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629",
     status: exists ? "ok" : "error",
     detail: exists
       ? "Function is available."
-      : withHint(message, "20260610_board_share_snapshot_repair.sql"),
+      : withHint(message, "20260611_live_schema_repair.sql"),
     required: true,
   };
 }
@@ -163,11 +183,12 @@ async function checkCreateBoardTokenRpc(): Promise<IPCHealthCheck> {
   return {
     key: "create_board_token_rpc",
     label: "Board token creation RPC",
-    labelAr: "دالة إنشاء رابط المشاركة",
+    // \u062F\u0627\u0644\u0629 \u0625\u0646\u0634\u0627\u0621 \u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629 = "دالة إنشاء رابط المشاركة"
+    labelAr: "\u062F\u0627\u0644\u0629 \u0625\u0646\u0634\u0627\u0621 \u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629",
     status: exists ? "ok" : "error",
     detail: exists
       ? "Function is available."
-      : withHint(message, "20260610_board_share_snapshot_repair.sql"),
+      : withHint(message, "20260611_live_schema_repair.sql"),
     required: true,
   };
 }
@@ -180,11 +201,12 @@ async function checkLedgerRpcs(): Promise<IPCHealthCheck> {
   return {
     key: "ledger_rpcs",
     label: "Financial ledger RPCs",
-    labelAr: "دوال المعاملات المالية",
+    // \u062F\u0648\u0627\u0644 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0627\u0644\u0645\u0627\u0644\u064A\u0629 = "دوال المعاملات المالية"
+    labelAr: "\u062F\u0648\u0627\u0644 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0627\u0644\u0645\u0627\u0644\u064A\u0629",
     status: exists ? "ok" : "warning",
     detail: exists
       ? "Post/reverse RPCs are available."
-      : withHint(message, "20260605_financial_ledgers.sql"),
+      : withHint(message, "20260611_live_schema_repair.sql"),
     required: false,
   };
 }

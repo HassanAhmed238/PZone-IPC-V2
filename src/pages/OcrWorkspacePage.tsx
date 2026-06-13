@@ -24,8 +24,7 @@ export default function OcrWorkspacePage() {
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const BUILT_IN_KEY = "AIzaSyAWiW8PDccWe3-DgBcSrwh8jSEMcPyqfV4";
-  const apiKey = localStorage.getItem("api_key_gemini") || (import.meta.env as any).VITE_GEMINI_API_KEY || BUILT_IN_KEY;
+  const apiKey = localStorage.getItem("api_key_gemini") || (import.meta.env as any).VITE_GEMINI_API_KEY || "";
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -244,7 +243,7 @@ export default function OcrWorkspacePage() {
                 <div className="flex items-center justify-between">
                   <span>مفتاح API المستخدم:</span>
                   <span className="font-mono text-[10px] text-slate-400">
-                    {apiKey === BUILT_IN_KEY ? "مفتاح نظام مدمج 🔑" : "مفتاح خاص محفوظ 👤"}
+                    {apiKey ? "مفتاح خاص محفوظ 👤" : "لا يوجد مفتاح ⚠️"}
                   </span>
                 </div>
               </div>

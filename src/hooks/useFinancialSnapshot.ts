@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useInvoices, type Invoice } from "./useIPC";
+import { toEgp, getUsdToEgpSync, getUsdToEgp } from "@/lib/exchangeRate";
 
 export type LedgerStatus = "draft" | "validated" | "posted" | "reversed";
 export type CashFlowType = "in" | "out";
@@ -285,13 +286,28 @@ function normalizeCollection(row: any): CollectionTransaction {
   };
 }
 
-function buildLegacyCollections(invoices: Invoice[]): CollectionTransaction[] {
-  return invoices
-    .filter((inv) => toNum(inv.total_collections) > 0)
-    .map((inv) => {
+export function buildLegacyCollections(invoices: Invoice[]): CollectionTransaction[] {
+  const byProject = new Map<string, Invoice[]>();
+  for (const inv of invoices) {
+    if (!byProject.has(inv.project_code)) byProject.set(inv.project_code, []);
+    byProject.get(inv.project_code)!.push(inv);
+  }
+
+  const rows: CollectionTransaction[] = [];
+  byProject.forEach((projectInvoices, projectCode) => {
+    const sorted = [...projectInvoices].sort((a, b) => {
+      const aDate = new Date(a.collection_date || a.approval_date || a.submitted_date || a.created_at || "").getTime() || 0;
+      const bDate = new Date(b.collection_date || b.approval_date || b.submitted_date || b.created_at || "").getTime() || 0;
+      return aDate - bDate || getIpcSortValue(a.invoice_number, a.submitted_date || a.created_at) - getIpcSortValue(b.invoice_number, b.submitted_date || b.created_at);
+    });
+
+    for (const inv of sorted) {
+      const movement = toNum(inv.collection_current);
+      if (movement <= 0) continue;
+
       const date = inv.collection_date || inv.approval_date || inv.submitted_date || inv.created_at;
-      return normalizeCollection({
-        id: `legacy-${inv.id}`,
+      rows.push(normalizeCollection({
+        id: `legacy-${projectCode}-${inv.id}`,
         project_code: inv.project_code,
         project_name: inv.project_name,
         invoice_id: inv.id,
@@ -299,14 +315,17 @@ function buildLegacyCollections(invoices: Invoice[]): CollectionTransaction[] {
         client: inv.client,
         collection_date: date,
         collection_month: monthStart(date),
-        amount: inv.total_collections,
+        amount: movement,
         currency: "EGP",
         reference_no: `LEGACY-${inv.project_code}-${inv.invoice_number || "NA"}`,
         source_type: "legacy_backfill",
-        dedupe_key: `legacy:${inv.project_code}:${inv.invoice_number || "NA"}:${toNum(inv.total_collections)}`,
+        dedupe_key: `legacy:${inv.project_code}:${inv.invoice_number || "NA"}:${movement}`,
         status: "posted",
-      });
-    });
+      }));
+    }
+  });
+
+  return rows;
 }
 
 async function fetchCollectionTransactions(): Promise<CollectionTransaction[]> {
@@ -430,26 +449,20 @@ function addMonth(map: Map<string, MonthlyFinancialSummary>, key: string) {
   return map.get(key)!;
 }
 
-export function computeFinancialSnapshot({
-  invoices,
-  collections,
-  cashFlowTransactions,
-  forecasts,
-  filters,
-}: {
-  invoices: Invoice[];
-  collections: CollectionTransaction[];
-  cashFlowTransactions: CashFlowTransaction[];
-  forecasts: CashFlowForecast[];
-  filters?: FinancialSnapshotFilters;
-}): FinancialSnapshot {
-  const filteredInvoices = invoices.filter((inv) => passesFilters(inv, filters));
-  const now = Date.now();
+const SEVERITY_ORDER: Record<string, number> = { critical: 0, high: 1, warning: 2, medium: 3, low: 4, info: 5 };
+
+function sortBySeverity<T extends { severity: string; value?: number }>(items: T[]): T[] {
+  return items.sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity] || (b.value || 0) - (a.value || 0));
+}
+
+/* â”€â”€â”€ computeFinancialSnapshot helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+function resolveLatestIPCs(invoices: Invoice[], filters?: FinancialSnapshotFilters) {
+  const filtered = invoices.filter((inv) => passesFilters(inv, filters));
   const latestByProject = new Map<string, Invoice>();
   const invoicesByProject = new Map<string, Invoice[]>();
-  const controlIssues: FinancialControlIssue[] = [];
 
-  for (const inv of filteredInvoices) {
+  for (const inv of filtered) {
     if (!invoicesByProject.has(inv.project_code)) invoicesByProject.set(inv.project_code, []);
     invoicesByProject.get(inv.project_code)!.push(inv);
     const existing = latestByProject.get(inv.project_code);
@@ -458,35 +471,61 @@ export function computeFinancialSnapshot({
     if (!existing || invSort > existingSort) latestByProject.set(inv.project_code, inv);
   }
 
-  const projectCodes = new Set(filteredInvoices.map((inv) => inv.project_code));
-  const postedCollections = collections.filter((c) =>
-    projectCodes.has(c.project_code) &&
-    isPosted(c.status) &&
-    passesMonthRange(monthKey(c.collection_month || c.collection_date), filters)
-  );
-  const postedCash = cashFlowTransactions.filter((t) =>
-    (!t.project_code || projectCodes.has(t.project_code)) &&
-    passesMonthRange(monthKey(t.transaction_month || t.transaction_date), filters)
-  );
-  const activeForecasts = forecasts.filter((f) =>
-    (!f.project_code || projectCodes.has(f.project_code)) &&
-    passesMonthRange(monthKey(f.forecast_month || f.forecast_date), filters)
-  );
+  return { filtered, latestByProject, invoicesByProject };
+}
+
+interface FilteredLedger {
+  postedCollections: CollectionTransaction[];
+  postedCash: CashFlowTransaction[];
+  activeForecasts: CashFlowForecast[];
+}
+
+function filterLedgerData(
+  collections: CollectionTransaction[],
+  cashFlowTransactions: CashFlowTransaction[],
+  forecasts: CashFlowForecast[],
+  projectCodes: Set<string>,
+  filters?: FinancialSnapshotFilters,
+): FilteredLedger {
+  return {
+    postedCollections: collections.filter((c) =>
+      (c.project_code === "__manual__" || projectCodes.has(c.project_code)) &&
+      isPosted(c.status) &&
+      passesMonthRange(monthKey(c.collection_month || c.collection_date), filters)
+    ),
+    postedCash: cashFlowTransactions.filter((t) =>
+      (!t.project_code || projectCodes.has(t.project_code)) &&
+      passesMonthRange(monthKey(t.transaction_month || t.transaction_date), filters)
+    ),
+    activeForecasts: forecasts.filter((f) =>
+      (!f.project_code || projectCodes.has(f.project_code)) &&
+      passesMonthRange(monthKey(f.forecast_month || f.forecast_date), filters)
+    ),
+  };
+}
+
+function buildProjectSummaries(
+  latestByProject: Map<string, Invoice>,
+  invoicesByProject: Map<string, Invoice[]>,
+  ledger: FilteredLedger,
+  controlIssues: FinancialControlIssue[],
+  risks: FinancialRisk[],
+) {
+  const now = Date.now();
   const projects: ProjectFinancialSummary[] = [];
-  const risks: FinancialRisk[] = [];
 
   latestByProject.forEach((latest, code) => {
     const projectInvoices = invoicesByProject.get(code) || [];
-    const actualCollected = postedCollections
+    const actualCollected = ledger.postedCollections
       .filter((c) => c.project_code === code)
       .reduce((s, c) => s + c.amount, 0);
-    const actualCashOut = postedCash
+    const actualCashOut = ledger.postedCash
       .filter((t) => t.type === "out" && t.project_code === code && isPosted(t.status))
       .reduce((s, t) => s + t.amount, 0);
-    const forecastCashIn = activeForecasts
+    const forecastCashIn = ledger.activeForecasts
       .filter((f) => f.type === "in" && f.project_code === code && f.status !== "cancelled")
       .reduce((s, f) => s + f.amount * (f.probability_pct / 100), 0);
-    const forecastCashOut = activeForecasts
+    const forecastCashOut = ledger.activeForecasts
       .filter((f) => f.type === "out" && f.project_code === code && f.status !== "cancelled")
       .reduce((s, f) => s + f.amount * (f.probability_pct / 100), 0);
     const approvedNet = toNum(latest.approved_net_total);
@@ -592,12 +631,23 @@ export function computeFinancialSnapshot({
       latest_ipc_sort: getIpcSortValue(latest.invoice_number, latest.submitted_date || latest.created_at),
       status: latest.status,
       approval_date: latest.approval_date,
-      currency: "EGP",
+      currency: (latest as any).currency || "EGP",
       flags,
     });
   });
 
   projects.sort((a, b) => b.outstanding - a.outstanding || b.contract_value - a.contract_value || a.project_code.localeCompare(b.project_code));
+  return projects;
+}
+
+function detectLedgerControlIssues(
+  collections: CollectionTransaction[],
+  postedCollections: CollectionTransaction[],
+  projectCodes: Set<string>,
+  latestByProject: Map<string, Invoice>,
+  controlIssues: FinancialControlIssue[],
+) {
+  const now = Date.now();
 
   const orphanCollections = collections.filter((c) => isPosted(c.status) && !projectCodes.has(c.project_code));
   if (orphanCollections.length > 0) {
@@ -622,7 +672,6 @@ export function computeFinancialSnapshot({
     });
   }
 
-  // §5.5 — Stale submitted IPC with no approval
   latestByProject.forEach((latest, code) => {
     if (!latest.approval_date && latest.submitted_date) {
       const days = Math.floor((now - new Date(latest.submitted_date).getTime()) / (1000 * 60 * 60 * 24));
@@ -640,13 +689,11 @@ export function computeFinancialSnapshot({
     }
   });
 
-  // §5.5 — Suspicious repeated collection amount (3+ identical amounts for same project)
   const collectionAmountMap = new Map<string, Map<string, number>>();
   for (const c of postedCollections) {
-    const key = c.project_code;
     const amountKey = c.amount.toFixed(2);
-    if (!collectionAmountMap.has(key)) collectionAmountMap.set(key, new Map());
-    const counts = collectionAmountMap.get(key)!;
+    if (!collectionAmountMap.has(c.project_code)) collectionAmountMap.set(c.project_code, new Map());
+    const counts = collectionAmountMap.get(c.project_code)!;
     counts.set(amountKey, (counts.get(amountKey) || 0) + 1);
   }
   collectionAmountMap.forEach((amounts, projectCode) => {
@@ -665,7 +712,6 @@ export function computeFinancialSnapshot({
     });
   });
 
-  // §5.5 — Duplicate transaction fingerprint
   const dedupeKeyCount = new Map<string, number>();
   for (const c of collections) {
     dedupeKeyCount.set(c.dedupe_key, (dedupeKeyCount.get(c.dedupe_key) || 0) + 1);
@@ -681,7 +727,12 @@ export function computeFinancialSnapshot({
       });
     }
   });
+}
 
+function buildMonthlyTimeSeries(
+  filteredInvoices: Invoice[],
+  ledger: FilteredLedger,
+) {
   const monthMap = new Map<string, MonthlyFinancialSummary>();
   for (const inv of filteredInvoices) {
     const key = monthKey(inv.submitted_date || inv.created_at);
@@ -690,19 +741,19 @@ export function computeFinancialSnapshot({
     m.submitted += toNum(inv.work_current || inv.work_total);
     m.approved += toNum(inv.approved_current || inv.approved_total);
   }
-  for (const c of postedCollections) {
+  for (const c of ledger.postedCollections) {
     const key = monthKey(c.collection_month || c.collection_date);
     if (!key) continue;
     addMonth(monthMap, key).actualCollected += c.amount;
   }
-  for (const t of postedCash) {
+  for (const t of ledger.postedCash) {
     const key = monthKey(t.transaction_month || t.transaction_date);
     if (!key || !isPosted(t.status)) continue;
     const m = addMonth(monthMap, key);
     if (t.type === "in") m.actualCollected += t.category === "client_collection" ? 0 : t.amount;
     else m.actualCashOut += t.amount;
   }
-  for (const f of activeForecasts) {
+  for (const f of ledger.activeForecasts) {
     const key = monthKey(f.forecast_month || f.forecast_date);
     if (!key || f.status === "cancelled" || f.status === "closed") continue;
     const weighted = f.amount * (f.probability_pct / 100);
@@ -722,7 +773,11 @@ export function computeFinancialSnapshot({
     m.cumulativeActual = cumulativeActual;
     m.cumulativeForecast = cumulativeForecast;
   }
+  return monthly;
+}
 
+function distributeAgingBuckets(projects: ProjectFinancialSummary[]): AgingBucket[] {
+  const now = Date.now();
   const aging: AgingBucket[] = [
     { label: "0-30 days", labelAr: "0-30 days", days: "0-30", amount: 0, count: 0, projects: [] },
     { label: "31-60 days", labelAr: "31-60 days", days: "31-60", amount: 0, count: 0, projects: [] },
@@ -740,18 +795,26 @@ export function computeFinancialSnapshot({
     bucket.count += 1;
     bucket.projects.push(p.project_code);
   }
+  return aging;
+}
 
+function aggregatePortfolio(
+  projects: ProjectFinancialSummary[],
+  ledger: FilteredLedger,
+  usdToEgpRate: number = 1,
+): PortfolioFinancialSummary {
+  const toE = (amount: number, currency: string) => toEgp(amount, currency, usdToEgpRate);
   const portfolio: PortfolioFinancialSummary = {
     ...EMPTY_PORTFOLIO,
-    total_contract_value: projects.reduce((s, p) => s + p.contract_value, 0),
-    total_submitted: projects.reduce((s, p) => s + p.submitted_total, 0),
-    total_approved: projects.reduce((s, p) => s + p.approved_total, 0),
-    total_approved_net: projects.reduce((s, p) => s + p.approved_net, 0),
-    total_collections: projects.reduce((s, p) => s + p.actual_collected, 0),
-    total_forecast_cash_in: projects.reduce((s, p) => s + p.forecast_cash_in, 0),
-    total_cash_out: postedCash.filter((t) => t.type === "out" && isPosted(t.status)).reduce((s, t) => s + t.amount, 0),
-    total_forecast_cash_out: activeForecasts.filter((f) => f.type === "out" && f.status !== "cancelled").reduce((s, f) => s + f.amount * (f.probability_pct / 100), 0),
-    total_outstanding: projects.reduce((s, p) => s + p.outstanding, 0),
+    total_contract_value: projects.reduce((s, p) => s + toE(p.contract_value, p.currency), 0),
+    total_submitted: projects.reduce((s, p) => s + toE(p.submitted_total, p.currency), 0),
+    total_approved: projects.reduce((s, p) => s + toE(p.approved_total, p.currency), 0),
+    total_approved_net: projects.reduce((s, p) => s + toE(p.approved_net, p.currency), 0),
+    total_collections: projects.reduce((s, p) => s + p.actual_collected, 0), // collections are always EGP
+    total_forecast_cash_in: projects.reduce((s, p) => s + toE(p.forecast_cash_in, p.currency), 0),
+    total_cash_out: ledger.postedCash.filter((t) => t.type === "out" && isPosted(t.status)).reduce((s, t) => s + t.amount, 0),
+    total_forecast_cash_out: ledger.activeForecasts.filter((f) => f.type === "out" && f.status !== "cancelled").reduce((s, f) => s + f.amount * (f.probability_pct / 100), 0),
+    total_outstanding: projects.reduce((s, p) => s + toE(p.outstanding, p.currency), 0),
     total_over_collected: projects.reduce((s, p) => s + p.over_collected_amount, 0),
     project_count: projects.length,
     active_project_count: projects.filter((p) => !/completed|cancelled|منتهي|ملغ/i.test(p.status)).length,
@@ -759,13 +822,44 @@ export function computeFinancialSnapshot({
   portfolio.net_actual_cash = portfolio.total_collections - portfolio.total_cash_out;
   portfolio.net_forecast_cash = (portfolio.total_collections + portfolio.total_forecast_cash_in) - (portfolio.total_cash_out + portfolio.total_forecast_cash_out);
   portfolio.overall_collection_rate = portfolio.total_approved_net > 0 ? portfolio.total_collections / portfolio.total_approved_net : 0;
+  return portfolio;
+}
+
+/* ─── Main computation ─────────────────────────────────── */
+
+export function computeFinancialSnapshot({
+  invoices,
+  collections,
+  cashFlowTransactions,
+  forecasts,
+  filters,
+}: {
+  invoices: Invoice[];
+  collections: CollectionTransaction[];
+  cashFlowTransactions: CashFlowTransaction[];
+  forecasts: CashFlowForecast[];
+  filters?: FinancialSnapshotFilters;
+}): FinancialSnapshot {
+  const { filtered, latestByProject, invoicesByProject } = resolveLatestIPCs(invoices, filters);
+  const projectCodes = new Set(filtered.map((inv) => inv.project_code));
+  const ledger = filterLedgerData(collections, cashFlowTransactions, forecasts, projectCodes, filters);
+
+  const controlIssues: FinancialControlIssue[] = [];
+  const risks: FinancialRisk[] = [];
+
+  const projects = buildProjectSummaries(latestByProject, invoicesByProject, ledger, controlIssues, risks);
+  detectLedgerControlIssues(collections, ledger.postedCollections, projectCodes, latestByProject, controlIssues);
+
+  const monthly = buildMonthlyTimeSeries(filtered, ledger);
+  const aging = distributeAgingBuckets(projects);
+  const portfolio = aggregatePortfolio(projects, ledger, getUsdToEgpSync());
 
   const criticalCount = controlIssues.filter((issue) => issue.severity === "critical").length;
   const warningCount = controlIssues.filter((issue) => issue.severity === "warning").length;
   const usesLegacyCollections = collections.some(isLegacyCollection);
   const sourceMode: "ledger" | "legacy" = usesLegacyCollections ? "legacy" : "ledger";
   const readiness: FinancialReadiness = {
-    mode: usesLegacyCollections ? "legacy-fallback" : postedCollections.length > 0 ? "online-ledger" : "empty-ledger",
+    mode: usesLegacyCollections ? "legacy-fallback" : ledger.postedCollections.length > 0 ? "online-ledger" : "empty-ledger",
     score: Math.max(0, Math.min(100, 100 - criticalCount * 25 - warningCount * 8)),
     blockingIssues: criticalCount,
     warningIssues: warningCount,
@@ -778,21 +872,16 @@ export function computeFinancialSnapshot({
     monthly,
     monthlyTrend: monthly,
     aging,
-    risks: risks.sort((a, b) => {
-      const order: Record<string, number> = { critical: 0, high: 1, warning: 2, medium: 3, low: 4, info: 5 };
-      return order[a.severity] - order[b.severity] || (b.value || 0) - (a.value || 0);
-    }),
-    collections: postedCollections,
-    cashFlowTransactions: postedCash,
-    forecasts: activeForecasts,
-    controlIssues: controlIssues.sort((a, b) => {
-      const order: Record<string, number> = { critical: 0, high: 1, warning: 2, medium: 3, low: 4, info: 5 };
-      return order[a.severity] - order[b.severity] || (b.value || 0) - (a.value || 0);
-    }),
+    risks: sortBySeverity(risks),
+    collections: ledger.postedCollections,
+    cashFlowTransactions: ledger.postedCash,
+    forecasts: ledger.activeForecasts,
+    controlIssues: sortBySeverity(controlIssues),
     readiness,
     sourceMode,
   };
 }
+
 
 export function useCollectionTransactions() {
   return useQuery({
@@ -824,10 +913,52 @@ export function useCashFlowLedger() {
   };
 }
 
+// Helper function to check deep equality of filters
+export function areFiltersEqual(a?: FinancialSnapshotFilters, b?: FinancialSnapshotFilters): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+
+  // Compare primitive values
+  if (a.dateFrom !== b.dateFrom) return false;
+  if (a.dateTo !== b.dateTo) return false;
+  if (a.includeDraft !== b.includeDraft) return false;
+
+  // Helper for array check
+  const arraysEqual = (arr1?: string[], arr2?: string[]) => {
+    if (arr1 === arr2) return true;
+    if (!arr1 || !arr2) return false;
+    if (arr1.length !== arr2.length) return false;
+    return arr1.every((val, index) => val === arr2[index]);
+  };
+
+  if (!arraysEqual(a.projectCodes, b.projectCodes)) return false;
+  if (!arraysEqual(a.clients, b.clients)) return false;
+  if (!arraysEqual(a.sectors, b.sectors)) return false;
+  if (!arraysEqual(a.statuses, b.statuses)) return false;
+
+  return true;
+}
+
+// Custom hook to maintain reference stability
+export function useMemoizedFilters(filters?: FinancialSnapshotFilters): FinancialSnapshotFilters | undefined {
+  const ref = useRef<FinancialSnapshotFilters | undefined>(undefined);
+
+  if (!areFiltersEqual(ref.current, filters)) {
+    ref.current = filters ? { ...filters } : undefined;
+  }
+
+  return ref.current;
+}
+
 export function useFinancialSnapshot(filters?: FinancialSnapshotFilters) {
   const { data: invoices = [], isLoading: invoicesLoading, error: invoicesError } = useInvoices();
   const collectionQuery = useCollectionTransactions();
   const cashFlow = useCashFlowLedger();
+
+  const memoizedFilters = useMemoizedFilters(filters);
+
+  // Prefetch exchange rate on mount so it's cached for portfolio calculations
+  useEffect(() => { getUsdToEgp(); }, []);
 
   const collections = useMemo(() => {
     const ledgerCollections = collectionQuery.data || [];
@@ -840,9 +971,9 @@ export function useFinancialSnapshot(filters?: FinancialSnapshotFilters) {
       collections,
       cashFlowTransactions: cashFlow.transactions,
       forecasts: cashFlow.forecasts,
-      filters,
+      filters: memoizedFilters,
     }),
-    [invoices, collections, cashFlow.transactions, cashFlow.forecasts, filters]
+    [invoices, collections, cashFlow.transactions, cashFlow.forecasts, memoizedFilters]
   );
 
   return {

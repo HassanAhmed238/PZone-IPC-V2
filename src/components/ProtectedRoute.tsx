@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/useAuthStore";
 import { useRouteAccess } from "@/hooks/useRouteAccess";
 
 // ── Dev bypass: only active when BOTH Vite dev-mode AND env flag are set ──

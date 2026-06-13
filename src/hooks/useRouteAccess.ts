@@ -3,6 +3,7 @@ import { useUserRoles } from "./useUserRoles";
 // Define which roles can access each route
 const routeAccess: Record<string, string[]> = {
   "/": ["all"],
+  "/settings": ["all"],
   "/tenders": ["all"],
   "/tenders/new": ["admin", "estimator", "ceo"],
   "/budget": ["admin", "cost_control", "estimator", "finance", "ceo", "chairman"],

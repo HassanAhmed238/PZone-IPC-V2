@@ -61,7 +61,7 @@ export default function ProjectWBSTab({ projectId }: Props) {
 
   const toggleExpand = (id: string) => {
     const next = new Set(expanded);
-    next.has(id) ? next.delete(id) : next.add(id);
+    if (next.has(id)) { next.delete(id); } else { next.add(id); }
     setExpanded(next);
   };
 

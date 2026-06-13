@@ -1,73 +1,66 @@
-# Welcome to your Lovable project
+# PZone IPC V2
 
-## Project info
+Construction ERP — Interim Payment Certificate (IPC) Management System.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Stack
 
-## How can I edit this code?
+- **Frontend:** React 18 + Vite + TypeScript + Tailwind CSS + shadcn/ui
+- **Backend:** Supabase (Postgres, Storage, Auth, Edge Functions)
+- **State:** TanStack Query (react-query) — offline fallback via localStorage
+- **Locale:** Arabic (ar) primary; bilingual UI (Arabic + English)
 
-There are several ways of editing your application.
+## Prerequisites
 
-**Use Lovable**
+- Node.js ≥ 18
+- A Supabase project with IPC migrations applied
+- Environment variables configured (see `.env.example`)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Setup
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Copy and fill in environment variables
+cp .env.example .env
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+See `.env.example` for required keys. Key variables:
 
-**Use GitHub Codespaces**
+| Variable | Purpose |
+|---|---|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Key Modules
 
-## What technologies are used for this project?
+| Module | Hook | Description |
+|---|---|---|
+| IPC / Invoices | `useIPC.ts` | CRUD for IPC invoices; offline fallback to localStorage |
+| IPC Projects | `useIPCProjects.ts` | Project registry; 5-min TTL retry on DB failure |
+| Financial Snapshot | `useFinancialSnapshot.ts` | Portfolio metrics, aging, risks, control issues, source-mode selection |
+| Collections Ledger | `useCollectionTransactions` | Transaction-based monthly collections |
+| Cash Flow | `useCashFlowLedger` | Cash flow transactions + forecasts |
 
-This project is built with:
+## Data Source Priority
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+When Supabase is reachable, the **database is the single source of truth**. localStorage is used as a read fallback only when the Supabase `invoices` table is unavailable (e.g., pending migration).
 
-## How can I deploy this project?
+## Migrations
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+SQL migrations are in `supabase/migrations/`. If board sharing fails, run:
 
-## Can I connect a custom domain to my Lovable project?
+```
+supabase/migrations/20260611_live_schema_repair.sql
+```
 
-Yes, you can!
+## Building
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```sh
+npm run build
+```

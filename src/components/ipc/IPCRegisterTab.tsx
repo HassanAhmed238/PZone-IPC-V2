@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { fmtNum, fmtCompact, fmtPercent } from "@/lib/utils";
 import { type Invoice, useUpdateInvoice, useDeletedInvoices, useRestoreInvoice, usePermanentlyDeleteFromTrash } from "@/hooks/useIPC";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/useAuthStore";
 
 /* Full numbers with commas for professional display: 6,659,440.00 */
 const fmtMoney = (v: number) => fmtNum(v, 2);
@@ -52,7 +52,7 @@ function loadColumnPrefs(): Set<ColumnId> {
   try {
     const saved = JSON.parse(localStorage.getItem(LS_COLS_KEY) || "null");
     if (Array.isArray(saved)) return new Set(saved as ColumnId[]);
-  } catch {}
+  } catch { /* column prefs not parseable — use defaults */ }
   return new Set(COLUMN_DEFS.filter((c) => c.default).map((c) => c.id));
 }
 

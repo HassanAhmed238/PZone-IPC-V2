@@ -84,6 +84,27 @@ export function useProjects(filters?: {
       const { data, error } = await query;
       if (error) throw new Error("خطأ في جلب المشاريع");
 
+      // Batch-fetch all budget totals in a single query to avoid N+1
+      const budgetMap = new Map<string, number>();
+      const budgetIds = (data || [])
+        .map((p: any) => p.budget_header_id)
+        .filter((id: any): id is string => id != null);
+      if (budgetIds.length > 0) {
+        try {
+          const { data: budgets } = await supabase
+            .from("budget_headers")
+            .select("id, total_budget")
+            .in("id", budgetIds);
+          if (budgets) {
+            for (const b of budgets) {
+              budgetMap.set(b.id, b.total_budget || 0);
+            }
+          }
+        } catch {
+          // budget_headers table may not exist
+        }
+      }
+
       // Enrich with metrics — safely default columns that may not exist in DB
       const enriched: ProjectWithMetrics[] = await Promise.all(
         (data || []).map(async (project: any) => {
@@ -97,8 +118,8 @@ export function useProjects(filters?: {
           };
 
           // Get CPI from cost control if available
-          let cpi: number | null = null;
-          let spi: number | null = null;
+          const cpi: number | null = null;
+          const spi: number | null = null;
           let margin_pct: number | null = null;
 
           // Calculate days remaining
@@ -107,19 +128,10 @@ export function useProjects(filters?: {
           const days_remaining = endDate ? Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
 
           // Calculate margin if we have contract value and budget
-          if (safeProject.budget_header_id) {
-            try {
-              const { data: budget } = await supabase
-                .from("budget_headers")
-                .select("total_budget")
-                .eq("id", safeProject.budget_header_id)
-                .single();
-
-              if (budget && safeProject.contract_value) {
-                margin_pct = ((safeProject.contract_value - (budget.total_budget || 0)) / safeProject.contract_value) * 100;
-              }
-            } catch {
-              // budget_headers table may not exist
+          if (safeProject.budget_header_id && safeProject.contract_value) {
+            const totalBudget = budgetMap.get(safeProject.budget_header_id);
+            if (totalBudget !== undefined) {
+              margin_pct = ((safeProject.contract_value - totalBudget) / safeProject.contract_value) * 100;
             }
           }
 

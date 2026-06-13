@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Search, Save, Plus } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/stores/useAuthStore";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useCreateProject } from "@/hooks/useProjects";
@@ -364,14 +364,12 @@ export default function OngoingProjectsProgressPage() {
                         {isEditing ? (
                           <div className="flex justify-center">
                             <Checkbox 
-                              // @ts-ignore
                               checked={!!editFormData.progress_sheet} 
                               onCheckedChange={(checked) => handleFieldChange("progress_sheet", !!checked)} 
                             />
                           </div>
                         ) : (
                           <div className="flex justify-center">
-                            {/* @ts-ignore */}
                             <Checkbox checked={!!project.progress_sheet} disabled />
                           </div>
                         )}

@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Shield, UserPlus, Trash2, Search, Users, Database, ShieldCheck, FileText, Anchor, Activity, Calculator, FileSignature, Coins } from "lucide-react";
+import { CheckCircle2, Shield, UserPlus, Trash2, Search, Users, Database, ShieldCheck, FileText, Anchor, Activity, Calculator, FileSignature, Coins } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useModuleAccess } from "@/hooks/useModuleAccess";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -137,7 +137,7 @@ function RolePills({ roles }: { roles: string[] }) {
 export default function UserManagementPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
-  const { isAdmin, hasRole, isLoading: loadingViewerRoles } = useUserRoles();
+  const { isAdmin, hasRole, isLoading: loadingViewerRoles, user } = useUserRoles();
   const canViewAdmin = IS_DEV_LOCALHOST || isAdmin || hasRole("ceo") || hasRole("chairman");
 
   // Fetch all profiles
@@ -185,6 +185,29 @@ export default function UserManagementPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       toast.success("تم حذف الصلاحية");
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const approveProfileName = useMutation({
+    mutationFn: async (profile: any) => {
+      if (!profile.pending_full_name) throw new Error("No pending name to approve.");
+      const { error } = await (supabase as any)
+        .from("profiles")
+        .update({
+          full_name: profile.pending_full_name,
+          pending_full_name: null,
+          profile_change_status: "approved",
+          profile_change_reviewed_by: user?.id || null,
+          profile_change_reviewed_at: new Date().toISOString(),
+          profile_change_rejection_reason: null,
+        })
+        .eq("id", profile.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      toast.success("Profile name approved.");
     },
     onError: (err: any) => toast.error(err.message),
   });
@@ -308,6 +331,7 @@ export default function UserManagementPage() {
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">القسم</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">الصلاحيات</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">إضافة صلاحية</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Profile Approval</th>
               </tr>
             </thead>
             <tbody>
@@ -373,6 +397,26 @@ export default function UserManagementPage() {
                         </select>
                       ) : (
                         <span className="text-xs text-muted-foreground">كل الصلاحيات مُعيّنة</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {(profile as any).profile_change_status === "pending" ? (
+                        <div className="space-y-2">
+                          <div className="text-xs text-muted-foreground">
+                            New name: <span className="font-semibold text-foreground">{(profile as any).pending_full_name}</span>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={!isAdmin || approveProfileName.isPending}
+                            onClick={() => approveProfileName.mutate(profile)}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50 dark:text-emerald-300"
+                          >
+                            <CheckCircle2 size={13} />
+                            Approve
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No pending request</span>
                       )}
                     </td>
                   </tr>

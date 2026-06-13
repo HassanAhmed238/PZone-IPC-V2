@@ -12,7 +12,7 @@ export function getGoogleClientId(): string {
   try {
     const envKey = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (envKey) return envKey;
-  } catch (e) {}
+  } catch { /* VITE_GOOGLE_CLIENT_ID env not available — fall through to localStorage */ }
   
   // Check localStorage
   return localStorage.getItem("google_client_id") || "";

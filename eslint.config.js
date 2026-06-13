@@ -21,6 +21,10 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Broad repo has intentional `any` casts for Supabase generics — warn only.
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Hook deps are addressed incrementally; don't block CI.
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
 );

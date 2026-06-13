@@ -50,6 +50,7 @@ const IPCBoardPage = lazy(() => import("./pages/IPCBoardPage"));
 const StakeholdersPage = lazy(() => import("./pages/StakeholdersPage"));
 const CollectionsPage = lazy(() => import("./pages/CollectionsPage"));
 const CashFlowPage = lazy(() => import("./pages/CashFlowPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 /* ─── Query Client ─────────────────────────────────────────── */
@@ -126,6 +127,7 @@ function App() {
                 <Route path="/stakeholders" element={<StakeholdersPage />} />
                 <Route path="/collections" element={<CollectionsPage />} />
                 <Route path="/cash-flow" element={<CashFlowPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 {modules.filter(m => ![
                   "/projects",
                   "/invoices",

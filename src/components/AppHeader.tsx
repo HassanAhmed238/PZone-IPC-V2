@@ -1,6 +1,9 @@
 import { Search, User, Menu, Sun, Moon } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useThemeMode } from "@/hooks/useThemeMode";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { Link } from "react-router-dom";
 
 interface AppHeaderProps {
   sidebarWidth: number;
@@ -10,7 +13,11 @@ interface AppHeaderProps {
 
 export default function AppHeader({ sidebarWidth, onMenuClick, isMobile }: AppHeaderProps) {
   const { theme, toggleTheme } = useThemeMode();
+  const { data: profile } = useUserProfile();
+  const { roles, user } = useUserRoles();
   const nextThemeLabel = theme === "dark" ? "Light" : "Dark";
+  const displayName = profile?.full_name || user?.email || "User";
+  const roleLabel = roles[0]?.replace(/_/g, " ") || profile?.department || "User";
 
   return (
     <header
@@ -56,15 +63,15 @@ export default function AppHeader({ sidebarWidth, onMenuClick, isMobile }: AppHe
 
         <NotificationBell />
         <div className="h-6 w-px bg-border" />
-        <div className="flex items-center gap-3">
+        <Link to="/settings" className="flex items-center gap-3 rounded-lg px-2 py-1 transition-colors hover:bg-muted">
           <div className="w-8 h-8 rounded-full gradient-brand flex items-center justify-center">
             <User size={14} className="text-primary-foreground" />
           </div>
           <div className="hidden md:block">
-            <p className="text-sm font-medium font-heading text-foreground">Admin User</p>
-            <p className="text-xs text-muted-foreground">Chairman</p>
+            <p className="text-sm font-medium font-heading text-foreground">{displayName}</p>
+            <p className="text-xs capitalize text-muted-foreground">{roleLabel}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

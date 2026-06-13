@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
+﻿import { useState, useMemo, useEffect, useRef, Suspense, lazy } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, FolderOpen, ClipboardList, BarChart2,
@@ -9,6 +9,7 @@ import {
 import * as XLSX from "xlsx";
 
 import { useInvoices, useDeleteInvoice, useInvoiceStats, getCurrentShareToken, getCurrentSignedUrl, useGenerateShareToken, buildShareUrl } from "@/hooks/useIPC";
+import { encodeOverridesParam, useMonthlyOverrides } from "@/hooks/useMonthlyOverrides";
 import { useIPCProjects, syncAllProjectsToIPC } from "@/hooks/useIPCProjects";
 import { useProjects } from "@/hooks/useProjects";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -72,7 +73,7 @@ function ShareSelect({
   );
 }
 
-function ShareModal({ onClose }: { onClose: () => void }) {
+function ShareModal({ onClose, overrides }: { onClose: () => void; overrides?: Record<string, number> }) {
   const [copied, setCopied] = useState(false);
   const generate = useGenerateShareToken();
   const { data: invoices = [] } = useInvoices();
@@ -126,7 +127,15 @@ function ShareModal({ onClose }: { onClose: () => void }) {
     }).length;
   }, [invoices, projectCode, client, status, month, projectManager, projectManagerByCode]);
 
-  const url = (token && signedUrl) ? buildShareUrl(token, page) : null;
+  const baseUrl = (token && signedUrl) ? buildShareUrl(token, page) : null;
+  const overridesParam = overrides ? encodeOverridesParam(overrides) : null;
+  const url = baseUrl
+    ? overridesParam
+      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}ov=${overridesParam}`
+      : baseUrl
+    : null;
+  const hasOverrides = overridesParam !== null;
+  const overrideCount = overrides ? Object.keys(overrides).length : 0;
 
   const handleGenerate = async () => {
     const result = await generate.mutateAsync({ options: shareOptions });
@@ -222,6 +231,11 @@ function ShareModal({ onClose }: { onClose: () => void }) {
 
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
               This link will share <strong className="text-white">{scopedCount}</strong> IPC records as read-only data.
+              {hasOverrides && (
+                <span className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-black" style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
+                  + {overrideCount} chart edit{overrideCount !== 1 ? "s" : ""} included
+                </span>
+              )}
             </div>
 
             <button onClick={handleGenerate} disabled={generate.isPending}
@@ -399,6 +413,7 @@ export default function IPCManagementPage() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<any | null>(null);
   const [drilldownCode, setDrilldownCode] = useState<string | null>(null);
+    const { overrides } = useMonthlyOverrides();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [showLinksPanel, setShowLinksPanel] = useState(false);
@@ -598,7 +613,7 @@ export default function IPCManagementPage() {
             onClose={() => { setShowFormModal(false); setEditingInvoice(null); }}
           />
         )}
-        {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
+        {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} overrides={overrides} />}
         {showLinksPanel && <SharedLinksPanel open={showLinksPanel} onClose={() => setShowLinksPanel(false)} />}
 
         {/* ── Sync Modal ── */}

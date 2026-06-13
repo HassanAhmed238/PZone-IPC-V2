@@ -1,5 +1,7 @@
 # PRD: Collections Module Hardening
 
+> **Status (2026-06-12):** Phase A implementation is **complete** — `collection_transactions` table, `useCollectionTransactions` hook, `useFinancialSnapshot` ledger/legacy source mode, and import validation are live. The problem statement below describes the pre-implementation state.
+
 ## Document Control
 
 - Product: `PZone IPC V2`

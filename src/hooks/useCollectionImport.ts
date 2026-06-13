@@ -63,7 +63,7 @@ export function useCollectionPostingActions() {
       const { data, error } = await (supabase as any).rpc("post_collection_transaction", { row_id: id });
       if (error) {
         const message = String(error.message || "");
-        if (/not found or not postable|already posted/i.test(message)) {
+        if (/already posted/i.test(message)) {
           return null;
         }
         throw error;

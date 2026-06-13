@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isTableMissingError, createTableAvailabilityGuard } from "@/lib/supabase-table-check";
 
 /* ─── Cache Configuration ─────────────────────────────── */
 const CACHE = {
@@ -12,11 +13,7 @@ const CACHE = {
   single: { staleTime: 60 * 1000, gcTime: 5 * 60 * 1000 },
 } as const;
 
-/** Detect Supabase errors indicating a table/schema is not yet migrated */
-function isTableMissingError(error: any): boolean {
-  const msg = String(error?.message || "");
-  return /does not exist|schema cache|Could not find|relation .* does not exist/i.test(msg);
-}
+/* isTableMissingError imported from @/lib/supabase-table-check */
 
 /** Invalidate all IPC-related queries in one batch */
 function invalidateAllIPC(qc: QueryClient) {
@@ -97,6 +94,7 @@ export interface Invoice {
   project_id: string | null;
   ipc_project_id: string | null;
   share_token: string | null;
+  currency?: string;
   created_at: string;
   updated_at: string;
 }
@@ -142,38 +140,45 @@ function saveLocalInvoices(invoices: Invoice[]) {
   localStorage.setItem(LS_KEY, JSON.stringify(invoices));
 }
 
+/** Normalize Arabic text for consistent key matching (handles ى/ي, إ/أ/آ→ا, ة→ه) */
+function normalizeArabic(text: string): string {
+  return text
+    .replace(/[\u064B-\u065F\u0670]/g, "")  // strip tashkeel/diacritics
+    .replace(/ى/g, "ي")                     // normalize alef maqsura → yaa
+    .replace(/إ|أ|آ/g, "ا")                  // normalize hamza variants → alef
+    .replace(/ة/g, "ه")                      // normalize taa marbuta → haa
+    .replace(/\s+/g, " ")                    // collapse whitespace
+    .trim();
+}
+
+export function getInvoiceKey(inv: { id: string; project_code: string; invoice_number: string | null | undefined }): string {
+  return inv.invoice_number ? `${inv.project_code}::${normalizeArabic(inv.invoice_number)}` : `draft::${inv.id}`;
+}
+
 /** Merge two invoice arrays, preferring DB records when duplicates exist */
-function mergeInvoices(dbInvoices: Invoice[], lsInvoices: Invoice[]): Invoice[] {
+export function mergeInvoices(dbInvoices: Invoice[], lsInvoices: Invoice[]): Invoice[] {
   const byKey = new Map<string, Invoice>();
-  // First add LS records (keyed by project_code + invoice_number)
+  // First add LS records
   lsInvoices.forEach((inv) => {
-    const key = `${inv.project_code}::${inv.invoice_number ?? ""}`;
-    byKey.set(key, inv);
+    byKey.set(getInvoiceKey(inv), inv);
   });
   // Then overwrite/add DB records (higher priority)
   dbInvoices.forEach((inv) => {
-    const key = `${inv.project_code}::${inv.invoice_number ?? ""}`;
-    byKey.set(key, inv);
+    byKey.set(getInvoiceKey(inv), inv);
   });
   return Array.from(byKey.values());
 }
 
-/* ─── Table availability check (with TTL to recover from transient errors) ── */
 
-let _tableAvailable: boolean | null = null;
-let _tableCheckedAt = 0;
-const TABLE_CHECK_TTL = 5 * 60 * 1000; // Re-check every 5 minutes
+/* ─── Table availability check (shared guard with TTL recovery) ── */
+
+const invoiceTableGuard = createTableAvailabilityGuard("invoices");
 
 async function isTableAvailable(): Promise<boolean> {
-  const now = Date.now();
-  // Use cached result if still within TTL
-  if (_tableAvailable !== null && (now - _tableCheckedAt) < TABLE_CHECK_TTL) {
-    return _tableAvailable;
-  }
+  if (!invoiceTableGuard.shouldProbe()) return false;
   try {
-    // Probe the columns required by the current IPC module. Some Supabase projects
-    // have an older invoices table that can be selected but cannot accept the
-    // current IPC payload, which makes the log appear empty or fail on save.
+    // Probe columns required by the current IPC module. Older Supabase
+    // projects may lack these, making the log appear empty or fail on save.
     const requiredColumns = [
       "id",
       "deductions_breakdown",
@@ -191,91 +196,82 @@ async function isTableAvailable(): Promise<boolean> {
       "ipc_project_id",
     ].join(", ");
     const { error } = await supabase.from("invoices").select(requiredColumns).limit(0);
-    _tableAvailable = !error;
-    _tableCheckedAt = now;
     if (error) {
       console.warn("[IPC] Supabase invoices table columns not fully migrated, using localStorage:", error.message);
+      invoiceTableGuard.markUnavailable();
+      return false;
     }
+    invoiceTableGuard.markAvailable();
+    return true;
   } catch {
-    _tableAvailable = false;
-    _tableCheckedAt = now;
+    invoiceTableGuard.markUnavailable();
+    return false;
   }
-  return _tableAvailable;
 }
 
-/** Reset table availability check (e.g., after a successful DB operation) */
 function markTableAvailable() {
-  _tableAvailable = true;
-  _tableCheckedAt = Date.now();
+  invoiceTableGuard.markAvailable();
 }
 
 /* ─── Auto-calc helper ───────────────────────────────────── */
 
 export function autoCalc<T extends Partial<InvoiceInput>>(input: T): T {
-  const v = { ...input };
+  const invoice = { ...input };
 
-  // 1. Recover legacy flat inputs (e.g. from Excel imports or older records)
-  // Deductions: if total_deductions is present but breakdown is empty
-  if ((!v.deductions_breakdown || v.deductions_breakdown.length === 0) && (v.total_deductions || 0) > 0) {
-    v.deductions_breakdown = [{ name: "Deductions / استقطاعات", amount: v.total_deductions }];
+  // Recover legacy flat inputs (e.g. from Excel imports or older records)
+  if ((!invoice.deductions_breakdown || invoice.deductions_breakdown.length === 0) && (invoice.total_deductions || 0) > 0) {
+    invoice.deductions_breakdown = [{ name: "Deductions / استقطاعات", amount: invoice.total_deductions }];
   }
-  // Approved Deductions
-  if ((!v.approved_deductions_breakdown || v.approved_deductions_breakdown.length === 0) && (v.approved_deductions || 0) > 0) {
-    v.approved_deductions_breakdown = [{ name: "Approved Deductions / استقطاعات معتمدة", amount: v.approved_deductions }];
+  if ((!invoice.approved_deductions_breakdown || invoice.approved_deductions_breakdown.length === 0) && (invoice.approved_deductions || 0) > 0) {
+    invoice.approved_deductions_breakdown = [{ name: "Approved Deductions / استقطاعات معتمدة", amount: invoice.approved_deductions }];
   }
 
-  // Variations (VOs): If work_total is larger than base work (previous + current), difference represents variations
-  const baseWork = (v.work_previous || 0) + (v.work_current || 0);
-  const diff = (v.work_total || 0) - baseWork - (v.fluctuation_amount || 0);
-  if (diff > 0 && (!v.variations || v.variations.length === 0)) {
-    v.variations = [{ vo_number: "VO-MISC", description: "Other Variations / بنود أخرى", amount: diff }];
+  // If work_total exceeds base work (previous + current), the gap represents variation orders
+  const baseWork = (invoice.work_previous || 0) + (invoice.work_current || 0);
+  const diff = (invoice.work_total || 0) - baseWork - (invoice.fluctuation_amount || 0);
+  if (diff > 0 && (!invoice.variations || invoice.variations.length === 0)) {
+    invoice.variations = [{ vo_number: "VO-MISC", description: "Other Variations / بنود أخرى", amount: diff }];
   }
 
-  // Approved Variations
-  const approvedBaseWork = (v.approved_previous || 0) + (v.approved_current || 0);
-  const approvedDiff = (v.approved_total || 0) - approvedBaseWork - (v.approved_fluctuation_amount || 0);
-  if (approvedDiff > 0 && (!v.approved_variations || v.approved_variations.length === 0)) {
-    v.approved_variations = [{ vo_number: "VO-MISC", description: "Other Variations / بنود أخرى", amount: approvedDiff }];
+  const approvedBaseWork = (invoice.approved_previous || 0) + (invoice.approved_current || 0);
+  const approvedDiff = (invoice.approved_total || 0) - approvedBaseWork - (invoice.approved_fluctuation_amount || 0);
+  if (approvedDiff > 0 && (!invoice.approved_variations || invoice.approved_variations.length === 0)) {
+    invoice.approved_variations = [{ vo_number: "VO-MISC", description: "Other Variations / بنود أخرى", amount: approvedDiff }];
   }
 
-  // 2. Sum VO amounts from detailed lists
-  const voTotal = (v.variations || []).reduce((s, vo) => s + (vo.amount || 0), 0);
-  const approvedVoTotal = (v.approved_variations || []).reduce((s, vo) => s + (vo.amount || 0), 0);
+  const voTotal = (invoice.variations || []).reduce((s, vo) => s + (vo.amount || 0), 0);
+  const approvedVoTotal = (invoice.approved_variations || []).reduce((s, vo) => s + (vo.amount || 0), 0);
 
-  // 3. Recalculate Totals (include VOs + fluctuation)
   // BUG-4 fix: Only recalculate if breakdown fields are provided;
   // preserve existing work_total for Excel imports that only set the total.
-  const hasBreakdown = (v.work_previous || 0) > 0 || (v.work_current || 0) > 0 || voTotal > 0 || (v.fluctuation_amount || 0) > 0;
+  const hasBreakdown = (invoice.work_previous || 0) > 0 || (invoice.work_current || 0) > 0 || voTotal > 0 || (invoice.fluctuation_amount || 0) > 0;
   if (hasBreakdown) {
-    v.work_total = (v.work_previous || 0) + (v.work_current || 0) + voTotal + (v.fluctuation_amount || 0);
+    invoice.work_total = (invoice.work_previous || 0) + (invoice.work_current || 0) + voTotal + (invoice.fluctuation_amount || 0);
   }
-  v.total_deductions = (v.deductions_breakdown || []).reduce((s, d) => s + (d.amount || 0), 0);
+  invoice.total_deductions = (invoice.deductions_breakdown || []).reduce((s, d) => s + (d.amount || 0), 0);
   
-  // Net = work - deductions ± tax
-  v.net_previous = (v.work_previous || 0);
-  const submittedBase = (v.work_total || 0) - (v.total_deductions || 0);
+  invoice.net_previous = (invoice.work_previous || 0);
+  const submittedBase = (invoice.work_total || 0) - (invoice.total_deductions || 0);
   // tax_direction: 'added' = tax is on top (contractor charges VAT), 'withheld' = tax taken out
-  const taxDir = v.tax_direction || 'added';
-  const taxAmt = v.tax_amount || 0;
-  v.net_total = taxDir === 'added' ? submittedBase + taxAmt : submittedBase - taxAmt;
-  v.net_current = (v.net_total || 0) - (v.net_previous || 0);
+  const taxDir = invoice.tax_direction || 'added';
+  const taxAmt = invoice.tax_amount || 0;
+  invoice.net_total = taxDir === 'added' ? submittedBase + taxAmt : submittedBase - taxAmt;
+  invoice.net_current = (invoice.net_total || 0) - (invoice.net_previous || 0);
 
-  // Approved totals
-  v.approved_total = (v.approved_previous || 0) + (v.approved_current || 0) + approvedVoTotal + (v.approved_fluctuation_amount || 0);
-  v.approved_deductions = (v.approved_deductions_breakdown || []).reduce((s, d) => s + (d.amount || 0), 0);
+  invoice.approved_total = (invoice.approved_previous || 0) + (invoice.approved_current || 0) + approvedVoTotal + (invoice.approved_fluctuation_amount || 0);
+  invoice.approved_deductions = (invoice.approved_deductions_breakdown || []).reduce((s, d) => s + (d.amount || 0), 0);
   
-  const approvedBase = (v.approved_total || 0) - (v.approved_deductions || 0);
-  const appTaxDir = v.approved_tax_direction || 'added';
-  const appTaxAmt = v.approved_tax_amount || 0;
-  v.approved_net_total = appTaxDir === 'added' ? approvedBase + appTaxAmt : approvedBase - appTaxAmt;
-  v.approved_net_previous = (v.approved_previous || 0);
-  v.approved_net_current = (v.approved_net_total || 0) - (v.approved_net_previous || 0);
+  const approvedBase = (invoice.approved_total || 0) - (invoice.approved_deductions || 0);
+  const appTaxDir = invoice.approved_tax_direction || 'added';
+  const appTaxAmt = invoice.approved_tax_amount || 0;
+  invoice.approved_net_total = appTaxDir === 'added' ? approvedBase + appTaxAmt : approvedBase - appTaxAmt;
+  invoice.approved_net_previous = (invoice.approved_previous || 0);
+  invoice.approved_net_current = (invoice.approved_net_total || 0) - (invoice.approved_net_previous || 0);
 
-  // 4. Contract percentage
-  if ((v.contract_value || 0) > 0) {
-    v.contract_percentage = (v.work_total || 0) / (v.contract_value || 1);
+  if ((invoice.contract_value || 0) > 0) {
+    invoice.contract_percentage = (invoice.work_total || 0) / (invoice.contract_value || 1);
   }
-  return v;
+  return invoice;
 }
 
 /* ─── Hooks ──────────────────────────────────────────────── */
@@ -319,11 +315,12 @@ export function useInvoices(projectCode?: string) {
         return inv;
       }
       markTableAvailable();
-      // Merge DB + localStorage to ensure records created while offline remain visible
-      // until they are synced or the user decides to drop them.
-      let merged = mergeInvoices((data || []) as Invoice[], lsInv);
-      if (projectCode) merged = merged.filter((i) => i.project_code === projectCode);
-      return merged;
+      // When DB is reachable, it is the single source of truth.
+      // Do NOT merge with localStorage — stale local copies should not
+      // resurface and pollute finance/board data.
+      let dbInv = (data || []) as Invoice[];
+      if (projectCode) dbInv = dbInv.filter((i) => i.project_code === projectCode);
+      return dbInv;
     },
   });
 }
@@ -579,7 +576,7 @@ async function fetchAllInvoices(): Promise<Invoice[]> {
   return mergeInvoices((data || []) as Invoice[], lsInv);
 }
 
-async function syncLocalInvoicesToSupabase(localInvoices: Invoice[]): Promise<number> {
+export async function syncLocalInvoicesToSupabase(localInvoices: Invoice[]): Promise<number> {
   if (localInvoices.length === 0) return 0;
 
   const useDB = await isTableAvailable();
@@ -594,20 +591,18 @@ async function syncLocalInvoicesToSupabase(localInvoices: Invoice[]): Promise<nu
     return 0;
   }
 
-  const rowKey = (projectCode: string, invoiceNumber: string | null | undefined) =>
-    `${projectCode}::${invoiceNumber || ""}`;
   const existingByKey = new Map(
-    (existing || []).map((row: any) => [rowKey(row.project_code, row.invoice_number), row.id])
+    (existing || []).map((row: any) => [getInvoiceKey(row), row.id])
   );
 
   let synced = 0;
   for (const invoice of localInvoices) {
     const { id, created_at, updated_at, share_token, ...rest } = invoice as any;
     const row = { ...rest };
-    const existingId = existingByKey.get(rowKey(invoice.project_code, invoice.invoice_number));
+    const existingId = existingByKey.get(getInvoiceKey(invoice));
     const result = existingId
       ? await supabase.from("invoices").update(row).eq("id", existingId)
-      : await supabase.from("invoices").insert(row);
+      : await supabase.from("invoices").insert({ id, ...row });
 
     if (result.error) {
       console.warn("[IPC Share] Online invoice sync skipped for", invoice.project_code, result.error.message);
@@ -939,6 +934,7 @@ export function getCurrentSignedUrl(): string | null {
 }
 
 export interface BoardShareOptions {
+  tokenSlug?: string;
   projectCodes?: string[];
   clients?: string[];
   statuses?: string[];
@@ -970,6 +966,28 @@ export function buildShareUrl(token: string, page?: BoardShareOptions["page"]): 
   const url = new URL(`ipc-board/${token}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
   if (page && page !== "overview") url.searchParams.set("page", page);
   return url.toString();
+}
+
+export function normalizeBoardShareSlug(value: string | null | undefined): string {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^A-Za-z0-9_-]/g, "")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+}
+
+function validateBoardShareSlug(value: string | null | undefined): string | null {
+  const slug = normalizeBoardShareSlug(value);
+  if (!slug) return null;
+  if (slug.length < 3) throw new Error("Share link name must be at least 3 characters.");
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
+    return slug;
+  }
+  if (!/^[A-Za-z][A-Za-z0-9_-]{2,79}$/.test(slug)) {
+    throw new Error("Share link name must start with a letter and use only letters, numbers, hyphen, or underscore.");
+  }
+  return slug;
 }
 
 
@@ -1098,7 +1116,7 @@ export function useGenerateShareToken() {
         return null;
       }
 
-      const { projectManagerByCode, ...publicScope } = options || {};
+      const { projectManagerByCode, tokenSlug: _tokenSlug, ...publicScope } = options || {};
       const ledgerRows = await fetchShareLedgerRows(new Set(merged.map((inv) => inv.project_code)));
       const snapshotPayload: BoardSnapshotPayload = {
         version: 2,
@@ -1121,24 +1139,26 @@ export function useGenerateShareToken() {
         forecasts: ledgerRows.forecasts,
       };
 
-      // Use direct insert for share-token creation. This avoids RPC overload
-      // ambiguity between json/jsonb variants while preserving online snapshots.
-      const directToken = crypto.randomUUID();
+      // Use direct upsert for share-token creation. If a slug is provided, the
+      // same public URL is refreshed instead of creating a new UUID link.
+      const directToken = validateBoardShareSlug(options?.tokenSlug) || crypto.randomUUID();
       const directInsert = await supabase
         .from("board_share_tokens")
-        .insert({
+        .upsert({
           token: directToken,
           snapshot_data: snapshotPayload,
           scope: snapshotPayload.scope,
           expires_at: publicScope.expiresAt || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
           is_active: true,
+        }, {
+          onConflict: "token",
         })
         .select("token")
         .single();
 
       if (directInsert.error) {
         throw new Error(
-          "Online board sharing needs the board snapshot repair SQL. Run supabase/migrations/20260610_board_share_snapshot_repair.sql in Supabase, then generate the link again. Details: " +
+          "Online board sharing needs the board snapshot repair SQL. Run supabase/migrations/20260611_live_schema_repair.sql in Supabase, then generate the link again. Details: " +
           directInsert.error.message
         );
       }
@@ -1169,23 +1189,35 @@ export function useIPCBoardSnapshot(token: string | null | undefined) {
     queryFn: async () => {
       if (!token) return normalizeBoardSnapshot([]);
 
-      const direct = await (supabase as any)
+      // Step 1: Look up the token WITHOUT is_active filter to detect revoked/expired
+      const lookup = await (supabase as any)
         .from("board_share_tokens")
-        .select("snapshot_data, expires_at")
+        .select("snapshot_data, expires_at, is_active")
         .eq("token", token)
-        .eq("is_active", true)
         .maybeSingle();
 
-      const expiresAt = direct.data?.expires_at ? new Date(direct.data.expires_at).getTime() : null;
-      if (!direct.error && direct.data?.snapshot_data && (!expiresAt || expiresAt > Date.now())) {
-        return normalizeBoardSnapshot(direct.data.snapshot_data);
+      if (lookup.error && !isTableMissingError(lookup.error)) {
+        throw new Error(lookup.error.message);
       }
 
-      const directMessage = String(direct.error?.message || "");
-      if (direct.error && !/does not exist|schema cache|Could not find|relation .* does not exist/i.test(directMessage)) {
-        throw new Error(direct.error.message);
+      // Token found in DB — check its status
+      if (!lookup.error && lookup.data) {
+        // Check if revoked
+        if (!lookup.data.is_active) {
+          throw new Error("REVOKED: This share link has been revoked. Please request a new link from the project administrator. — تم إلغاء هذا الرابط");
+        }
+        // Check if expired
+        const expiresAt = lookup.data.expires_at ? new Date(lookup.data.expires_at).getTime() : null;
+        if (expiresAt && expiresAt <= Date.now()) {
+          throw new Error("EXPIRED: This share link has expired. Please request a new link from the project administrator. — انتهت صلاحية هذا الرابط");
+        }
+        // Active and valid — return data
+        if (lookup.data.snapshot_data) {
+          return normalizeBoardSnapshot(lookup.data.snapshot_data);
+        }
       }
 
+      // Step 2: Fallback to RPC (for older tokens created via create_board_token)
       const snapshot = await supabase.rpc("get_board_snapshot", {
         input_token: token,
       });
@@ -1194,16 +1226,8 @@ export function useIPCBoardSnapshot(token: string | null | undefined) {
         return normalizeBoardSnapshot(snapshot.data);
       }
 
-      const { data, error } = await supabase.rpc("get_board_invoices", {
-        input_token: token,
-      });
-
-      if (!error && data) {
-        return normalizeBoardSnapshot(data);
-      }
-
       throw new Error(
-        "No online board snapshot is available for this link. Run supabase/migrations/20260610_board_share_snapshot_repair.sql in Supabase and regenerate the share link.",
+        "NOT_FOUND: This share link is invalid or does not exist. — رابط المشاركة غير صالح",
       );
     },
   });
@@ -1217,7 +1241,6 @@ export function useIPCBoardData(token: string | null | undefined) {
   };
 }
 
-// syncBoardSnapshotIfActive removed — was a no-op with no callers.
 
 export function useNextInvoiceNumber(projectCode: string | null) {
   return useQuery({

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { computeFinancialSnapshot } from "@/hooks/useFinancialSnapshot";
+import { buildLegacyCollections, computeFinancialSnapshot, areFiltersEqual, useMemoizedFilters } from "@/hooks/useFinancialSnapshot";
 import type { Invoice } from "@/hooks/useIPC";
+import { renderHook } from "@testing-library/react";
 
 function invoice(overrides: Partial<Invoice>): Invoice {
   return {
@@ -65,7 +66,35 @@ describe("computeFinancialSnapshot", () => {
         invoice({ invoice_number: "1", work_total: 100, approved_net_total: 80 }),
         invoice({ invoice_number: "2", work_total: 250, approved_net_total: 200 }),
       ],
-      collections: [],
+      collections: buildLegacyCollections([
+        invoice({
+          id: "jan-pz-001",
+          project_code: "PZ-001",
+          invoice_number: "1",
+          submitted_date: "2026-01-20",
+          approval_date: "2026-01-25",
+          total_collections: 100,
+          approved_net_total: 300,
+        }),
+        invoice({
+          id: "apr-pz-001",
+          project_code: "PZ-001",
+          invoice_number: "2",
+          submitted_date: "2026-04-20",
+          approval_date: "2026-04-25",
+          total_collections: 250,
+          approved_net_total: 300,
+        }),
+        invoice({
+          id: "apr-pz-002",
+          project_code: "PZ-002",
+          invoice_number: "1",
+          submitted_date: "2026-04-10",
+          approval_date: "2026-04-15",
+          total_collections: 50,
+          approved_net_total: 100,
+        }),
+      ]),
       cashFlowTransactions: [],
       forecasts: [],
     });
@@ -458,5 +487,157 @@ describe("computeFinancialSnapshot", () => {
     expect(snapshot.projects[0].actual_collected).toBe(0);
     // outstanding must be full approved minus 0 collected
     expect(snapshot.portfolio.total_outstanding).toBe(1000);
+  });
+
+  it("converts legacy cumulative invoice collections into monthly movement", () => {
+    const legacyInvoices = [
+      invoice({
+        id: "jan-pz-001",
+        project_code: "PZ-001",
+        invoice_number: "1",
+        submitted_date: "2026-01-20",
+        approval_date: "2026-01-25",
+        total_collections: 100,
+        approved_net_total: 300,
+      }),
+      invoice({
+        id: "apr-pz-001",
+        project_code: "PZ-001",
+        invoice_number: "2",
+        submitted_date: "2026-04-20",
+        approval_date: "2026-04-25",
+        total_collections: 250,
+        approved_net_total: 300,
+      }),
+      invoice({
+        id: "apr-pz-002",
+        project_code: "PZ-002",
+        invoice_number: "1",
+        submitted_date: "2026-04-10",
+        approval_date: "2026-04-15",
+        total_collections: 50,
+        approved_net_total: 100,
+      }),
+    ];
+
+    const snapshot = computeFinancialSnapshot({
+      invoices: legacyInvoices,
+      collections: buildLegacyCollections(legacyInvoices),
+      cashFlowTransactions: [],
+      forecasts: [],
+    });
+
+    const january = snapshot.monthly.find((row) => row.monthKey === "2026-01");
+    const april = snapshot.monthly.find((row) => row.monthKey === "2026-04");
+
+    expect(snapshot.sourceMode).toBe("legacy");
+    expect(snapshot.portfolio.total_collections).toBe(300);
+    expect(january?.actualCollected).toBe(100);
+    expect(april?.actualCollected).toBe(200);
+  });
+});
+
+describe("areFiltersEqual", () => {
+  it("should return true when both filters are undefined", () => {
+    expect(areFiltersEqual(undefined, undefined)).toBe(true);
+  });
+
+  it("should return false when one filter is undefined and the other is defined", () => {
+    expect(areFiltersEqual({ dateFrom: "2026-01" }, undefined)).toBe(false);
+    expect(areFiltersEqual(undefined, { dateFrom: "2026-01" })).toBe(false);
+  });
+
+  it("should return true when filter fields have same primitive values", () => {
+    expect(
+      areFiltersEqual(
+        { dateFrom: "2026-01", dateTo: "2026-02", includeDraft: true },
+        { dateFrom: "2026-01", dateTo: "2026-02", includeDraft: true }
+      )
+    ).toBe(true);
+  });
+
+  it("should return false when primitive filter fields differ", () => {
+    expect(
+      areFiltersEqual(
+        { dateFrom: "2026-01", includeDraft: true },
+        { dateFrom: "2026-01", includeDraft: false }
+      )
+    ).toBe(false);
+
+    expect(
+      areFiltersEqual(
+        { dateFrom: "2026-01" },
+        { dateFrom: "2026-02" }
+      )
+    ).toBe(false);
+  });
+
+  it("should return true when array fields are identical", () => {
+    expect(
+      areFiltersEqual(
+        { projectCodes: ["P1", "P2"], clients: ["C1"], sectors: [], statuses: ["draft"] },
+        { projectCodes: ["P1", "P2"], clients: ["C1"], sectors: [], statuses: ["draft"] }
+      )
+    ).toBe(true);
+  });
+
+  it("should return false when array fields have different items or length", () => {
+    expect(
+      areFiltersEqual(
+        { projectCodes: ["P1", "P2"] },
+        { projectCodes: ["P1"] }
+      )
+    ).toBe(false);
+
+    expect(
+      areFiltersEqual(
+        { projectCodes: ["P1", "P2"] },
+        { projectCodes: ["P2", "P1"] }
+      )
+    ).toBe(false);
+
+    expect(
+      areFiltersEqual(
+        { projectCodes: ["P1"] },
+        { projectCodes: undefined }
+      )
+    ).toBe(false);
+  });
+});
+
+describe("useMemoizedFilters hook", () => {
+  it("should maintain reference stability when identical filter options are passed", () => {
+    const filter1 = { projectCodes: ["P1"], includeDraft: true };
+    const filter2 = { projectCodes: ["P1"], includeDraft: true };
+
+    const { result, rerender } = renderHook(({ filters }) => useMemoizedFilters(filters), {
+      initialProps: { filters: filter1 },
+    });
+
+    const firstResult = result.current;
+    expect(firstResult).toEqual(filter1);
+
+    rerender({ filters: filter2 });
+    const secondResult = result.current;
+
+    // References must be strictly equal, despite filter2 being a new object literal reference
+    expect(secondResult).toBe(firstResult);
+  });
+
+  it("should update reference and return a new object when filters actually change", () => {
+    const filter1 = { projectCodes: ["P1"] };
+    const filter2 = { projectCodes: ["P2"] };
+
+    const { result, rerender } = renderHook(({ filters }) => useMemoizedFilters(filters), {
+      initialProps: { filters: filter1 },
+    });
+
+    const firstResult = result.current;
+
+    rerender({ filters: filter2 });
+    const secondResult = result.current;
+
+    expect(secondResult).not.toBe(firstResult);
+    expect(secondResult).toEqual(filter2);
   });
 });

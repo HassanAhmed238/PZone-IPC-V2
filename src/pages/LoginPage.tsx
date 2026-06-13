@@ -16,12 +16,6 @@ export default function LoginPage() {
     let loginEmail = email.trim();
     let loginPassword = password;
     
-    // Easy access for admin testing based on user request
-    if (loginEmail.toLowerCase() === 'admin' && loginPassword === 'admin') {
-      loginEmail = 'admin@pzone.com';
-      loginPassword = 'adminpassword123';
-    }
-    
     const { error } = await supabase.auth.signInWithPassword({ 
       email: loginEmail, 
       password: loginPassword 
@@ -52,7 +46,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-3 py-2.5 rounded-lg border border-input bg-card text-foreground text-sm outline-none focus:ring-2 focus:ring-ring"
-              placeholder="you@company.com or 'admin'"
+              placeholder="you@company.com"
             />
           </div>
           <div>

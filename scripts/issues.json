@@ -1,0 +1,1502 @@
+﻿[
+  {
+    "id": 1,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-002",
+    "ipc": "9",
+    "issue": "Net total(105,521,868.6) Γëá work_total(167,626,707.37) - deductions(60,428,571.69) = 107,198,135.68",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 2,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-003",
+    "ipc": "5",
+    "issue": "Net total(31,272,254.21) Γëá work_total(55,616,869.8) - deductions(23,788,446.9) = 31,828,422.9",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 3,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-004",
+    "ipc": "2",
+    "issue": "Net total(645,742.52) Γëá work_total(945,474.54) - deductions(290,277.27) = 655,197.27",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 4,
+    "severity": "medium",
+    "type": "formula_error",
+    "month": "January 2026",
+    "project": "PZ-010",
+    "ipc": "5",
+    "issue": "Approved total mismatch: prev(0) + current(5,887,063.2) = 5,887,063.2 Γëá sheet(0)",
+    "fix": "Check the Approved Total formula. For ╪«╪¬╪º┘à┘è (final) IPCs, if the current is 0 and total is 0, verify whether the approved values should carry forward from the previous IPC."
+  },
+  {
+    "id": 5,
+    "severity": "medium",
+    "type": "formula_error",
+    "month": "January 2026",
+    "project": "PZ-010",
+    "ipc": "5",
+    "issue": "Approved net total mismatch: prev(0) + current(4,086,296.05) = 4,086,296.05 Γëá sheet(0)",
+    "fix": "Check the Approved Net Total formula. It should equal Approved Net Previous + Approved Net Current."
+  },
+  {
+    "id": 6,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-010",
+    "ipc": "5",
+    "issue": "Net total(24,062,383.67) Γëá work_total(44,811,936.12) - deductions(0) = 44,811,936.12",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 7,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-013",
+    "ipc": "10",
+    "issue": "Net total(8,142,525.43) Γëá work_total(15,889,578.84) - deductions(9,506,955.99) = 6,382,622.85",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 8,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-014",
+    "ipc": "6",
+    "issue": "Net total(642,367.74) Γëá work_total(1,313,590.85) - deductions(501,168.28) = 812,422.57",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 9,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-016",
+    "ipc": "2",
+    "issue": "Net total(2,812,902.54) Γëá work_total(3,738,577.82) - deductions(935,675.72) = 2,802,902.1",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 10,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-020",
+    "ipc": "11",
+    "issue": "Net total(9,123,370.8) Γëá work_total(18,602,428.51) - deductions(9,535,435.86) = 9,066,992.65",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 11,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-022",
+    "ipc": "8",
+    "issue": "Net total(6,166,547.23) Γëá work_total(10,480,322.98) - deductions(4,023,854.87) = 6,456,468.11",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 12,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "January 2026",
+    "project": "PZ-024",
+    "ipc": "╪«╪¬╪º┘à┘ë",
+    "issue": "Net total(2,240,894.08) Γëá work_total(2,347,500) - deductions(47,918.41) = 2,299,581.59",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 13,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "February 2026",
+    "project": "PZ-002",
+    "ipc": "-",
+    "issue": "Net total(109,306,234.52) Γëá work_total(173,870,481.01) - deductions(62,825,541.68) = 111,044,939.33",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 14,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "February 2026",
+    "project": "PZ-006",
+    "ipc": "5",
+    "issue": "Net total(13,423,135.55) Γëá work_total(19,471,988.31) - deductions(5,664,029.14) = 13,807,959.17",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 15,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "February 2026",
+    "project": "PZ-008",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 16,
+    "severity": "high",
+    "type": "formula_error",
+    "month": "February 2026",
+    "project": "PZ-019",
+    "ipc": "2",
+    "issue": "Work total mismatch: prev(3,655,569.34) + current(0) = 3,655,569.34 Γëá sheet(0)",
+    "fix": "Check the Work Total formula in this row. It should equal Work Previous + Work Current. If Work Total is correct, then the Previous or Current values may be wrong."
+  },
+  {
+    "id": 17,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "February 2026",
+    "project": "PZ-021",
+    "ipc": "9",
+    "issue": "Status is 'approved' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 18,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "March 2026",
+    "project": "PZ-001",
+    "ipc": "9",
+    "issue": "Net total(66,914,462.1) Γëá work_total(169,045,018.75) - deductions(100,440,106.46) = 68,604,912.29",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 19,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "March 2026",
+    "project": "PZ-002",
+    "ipc": "-",
+    "issue": "Net total(105,514,979.16) Γëá work_total(167,683,388.99) - deductions(60,491,575.94) = 107,191,813.05",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 20,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "March 2026",
+    "project": "PZ-003",
+    "ipc": "6",
+    "issue": "Net total(33,265,222.49) Γëá work_total(59,255,122.72) - deductions(25,397,349) = 33,857,773.72",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 21,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "March 2026",
+    "project": "PZ-004",
+    "ipc": "3",
+    "issue": "Net total(1,082,650.69) Γëá work_total(1,585,180.83) - deductions(4,866,878.32) = -3,281,697.49",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 22,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "March 2026",
+    "project": "PZ-027",
+    "ipc": "╪«╪¬╪º┘à┘ë",
+    "issue": "Net total(2,327,718.46) Γëá work_total(2,469,005.84) - deductions(116,597.32) = 2,352,408.52",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 23,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-006",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 24,
+    "severity": "warning",
+    "type": "over_submission",
+    "month": "April 2026",
+    "project": "PZ-022",
+    "ipc": "╪«╪¬╪º┘à┘ë",
+    "issue": "Submitted(5,332,538.59) exceeds contract(4,729,456) by 12.8%",
+    "fix": "Verify: (1) Is the contract value correct? Maybe there's a variation order (VO) not reflected. (2) Is the submitted amount on the right row? (3) If legitimate, update contract value to include VOs."
+  },
+  {
+    "id": 25,
+    "severity": "medium",
+    "type": "formula_error",
+    "month": "April 2026",
+    "project": "PZ-026",
+    "ipc": "╪«╪¬╪º┘à┘è",
+    "issue": "Approved total mismatch: prev(2,469,005.84) + current(0) = 2,469,005.84 Γëá sheet(0)",
+    "fix": "Check the Approved Total formula. For ╪«╪¬╪º┘à┘è (final) IPCs, if the current is 0 and total is 0, verify whether the approved values should carry forward from the previous IPC."
+  },
+  {
+    "id": 26,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "April 2026",
+    "project": "PZ-026",
+    "ipc": "╪«╪¬╪º┘à┘è",
+    "issue": "Net total(2,304,399) Γëá work_total(2,469,005.84) - deductions(139,916.78) = 2,329,089.06",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 27,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-031",
+    "ipc": "8 ╪«╪¬╪º┘à┘è",
+    "issue": "Status is 'approved' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 28,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "April 2026",
+    "project": "PZ-033",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 29,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 30,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "April 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 31,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 32,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 33,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "April 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 34,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 35,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 36,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "April 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 37,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "April 2026",
+    "project": "PZ-037",
+    "ipc": "-",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 38,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "April 2026",
+    "project": "PZ-037",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 39,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-006",
+    "ipc": "7",
+    "issue": "Status is 'approved' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 40,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-007",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 41,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-008",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 42,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-010",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 43,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-011",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 44,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-013",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 45,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-014",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 46,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-017",
+    "ipc": "6",
+    "issue": "Status is 'approved' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 47,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-018",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 48,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-019",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 49,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-020",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 50,
+    "severity": "warning",
+    "type": "over_submission",
+    "month": "May 2026",
+    "project": "PZ-022",
+    "ipc": "╪«╪¬╪º┘à┘è",
+    "issue": "Submitted(5,332,538.59) exceeds contract(4,729,456) by 12.8%",
+    "fix": "Verify: (1) Is the contract value correct? Maybe there's a variation order (VO) not reflected. (2) Is the submitted amount on the right row? (3) If legitimate, update contract value to include VOs."
+  },
+  {
+    "id": 51,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-023",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 52,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-024",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 53,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-025",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 54,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-026",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 55,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-027",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 56,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-028",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 57,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-029",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 58,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-030",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 59,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "May 2026",
+    "project": "PZ-033",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 60,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 61,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "May 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 62,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 63,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 64,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "May 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 65,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 66,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "May 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 67,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "May 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 68,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-003",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 69,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-005",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 70,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-006",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 71,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-007",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 72,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-008",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 73,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-009",
+    "ipc": "2",
+    "issue": "Status is 'pending' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 74,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-010",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 75,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-011",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 76,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-012",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 77,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-013",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 78,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-014",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 79,
+    "severity": "warning",
+    "type": "over_submission",
+    "month": "June 2026",
+    "project": "PZ-018",
+    "ipc": "7",
+    "issue": "Submitted(23,646,919.58) exceeds contract(1,007,758.75) by 2246.5%",
+    "fix": "Verify: (1) Is the contract value correct? Maybe there's a variation order (VO) not reflected. (2) Is the submitted amount on the right row? (3) If legitimate, update contract value to include VOs."
+  },
+  {
+    "id": 80,
+    "severity": "low",
+    "type": "formula_deviation",
+    "month": "June 2026",
+    "project": "PZ-018",
+    "ipc": "7",
+    "issue": "Net total(16,910,119.75) Γëá work_total(23,646,919.58) - deductions(5,836,616.93) = 17,810,302.65",
+    "fix": "This may be normal if there are additional items (tax, retention, fluctuation). Verify the net formula in the sheet includes all relevant adjustments."
+  },
+  {
+    "id": 81,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-019",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 82,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-020",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 83,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-021",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 84,
+    "severity": "warning",
+    "type": "over_submission",
+    "month": "June 2026",
+    "project": "PZ-022",
+    "ipc": "╪«╪¬╪º┘à┘è",
+    "issue": "Submitted(5,332,538.59) exceeds contract(4,729,456) by 12.8%",
+    "fix": "Verify: (1) Is the contract value correct? Maybe there's a variation order (VO) not reflected. (2) Is the submitted amount on the right row? (3) If legitimate, update contract value to include VOs."
+  },
+  {
+    "id": 85,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-023",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 86,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-024",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 87,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-025",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 88,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-027",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 89,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-028",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 90,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-029",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 91,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-030",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 92,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-032",
+    "ipc": "Final",
+    "issue": "Status is 'pending' but submitted_date is null",
+    "fix": "Add the submission date for this IPC in the Submitted Date column."
+  },
+  {
+    "id": 93,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-033",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 94,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "June 2026",
+    "project": "PZ-033",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 95,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-033",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 96,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "June 2026",
+    "project": "PZ-033",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 97,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 98,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "June 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 99,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-034",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 100,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 101,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "June 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 102,
+    "severity": "low",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-035",
+    "ipc": "N/A",
+    "issue": "Missing invoice_number",
+    "fix": "Add the IPC number (e.g., '3', '╪«╪¬╪º┘à┘è'). The system will use a fallback key but explicit numbers are better for tracking."
+  },
+  {
+    "id": 103,
+    "severity": "high",
+    "type": "missing_field",
+    "month": "June 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Missing client name",
+    "fix": "Open the sheet tab for this month. Find the row for this project. Fill in the Client column with the correct client/employer name."
+  },
+  {
+    "id": 104,
+    "severity": "medium",
+    "type": "zero_contract",
+    "month": "June 2026",
+    "project": "PZ-036",
+    "ipc": "-",
+    "issue": "Contract value is 0",
+    "fix": "Enter the correct contract value in the Contract Value column. If this project has no contract yet, add a note or placeholder."
+  },
+  {
+    "id": 105,
+    "severity": "medium",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-007",
+    "ipc": "all",
+    "issue": "Inconsistent contract values across IPCs in same month: 70,022,926, 59,851,495",
+    "fix": "All IPCs for the same project in the same month should have the same contract value. Update the Contract Value column to be consistent."
+  },
+  {
+    "id": 106,
+    "severity": "low",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-007",
+    "ipc": "all",
+    "issue": "Multiple client names: HAC | LMD",
+    "fix": "If this is the same project, use the same client name. If these are sub-projects, consider using different project codes."
+  },
+  {
+    "id": 107,
+    "severity": "medium",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-008",
+    "ipc": "all",
+    "issue": "Inconsistent contract values across IPCs in same month: 36,683,721.34, 10,014,372.18",
+    "fix": "All IPCs for the same project in the same month should have the same contract value. Update the Contract Value column to be consistent."
+  },
+  {
+    "id": 108,
+    "severity": "low",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-008",
+    "ipc": "all",
+    "issue": "Multiple client names: Orascom | Waterway",
+    "fix": "If this is the same project, use the same client name. If these are sub-projects, consider using different project codes."
+  },
+  {
+    "id": 109,
+    "severity": "medium",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-012",
+    "ipc": "all",
+    "issue": "Inconsistent contract values across IPCs in same month: 5,457,365, 81,132,855.58",
+    "fix": "All IPCs for the same project in the same month should have the same contract value. Update the Contract Value column to be consistent."
+  },
+  {
+    "id": 110,
+    "severity": "low",
+    "type": "inconsistent_value",
+    "month": "January 2026",
+    "project": "PZ-012",
+    "ipc": "all",
+    "issue": "Multiple client names: LMD | ┘à╪»┘è┘å╪⌐ ┘à╪╡╪▒",
+    "fix": "If this is the same project, use the same client name. If these are sub-projects, consider using different project codes."
+  },
+  {
+    "id": 111,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "March 2026",
+    "project": "PZ-001",
+    "ipc": "9",
+    "issue": "Cumulative work_total decreased: 176,743,137.66 (February 2026) ΓåÆ 169,045,018.75 (March 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in March 2026? (3) Was the February 2026 value wrong?"
+  },
+  {
+    "id": 112,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "March 2026",
+    "project": "PZ-002",
+    "ipc": "-",
+    "issue": "Cumulative work_total decreased: 173,870,481.01 (February 2026) ΓåÆ 167,683,388.99 (March 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in March 2026? (3) Was the February 2026 value wrong?"
+  },
+  {
+    "id": 113,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "June 2026",
+    "project": "PZ-002",
+    "ipc": "11",
+    "issue": "Cumulative work_total decreased: 196,344,024.23 (May 2026) ΓåÆ 173,209,004.84 (June 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in June 2026? (3) Was the May 2026 value wrong?"
+  },
+  {
+    "id": 114,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "March 2026",
+    "project": "PZ-003",
+    "ipc": "6",
+    "issue": "Cumulative work_total decreased: 59,529,122.56 (February 2026) ΓåÆ 59,255,122.72 (March 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in March 2026? (3) Was the February 2026 value wrong?"
+  },
+  {
+    "id": 115,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "May 2026",
+    "project": "PZ-003",
+    "ipc": "7",
+    "issue": "Cumulative work_total decreased: 88,155,302.24 (April 2026) ΓåÆ 68,232,130.97 (May 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in May 2026? (3) Was the April 2026 value wrong?"
+  },
+  {
+    "id": 116,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-004",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 2,508,332.21 ΓåÆ 2,669,670.79",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 117,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "March 2026",
+    "project": "PZ-004",
+    "ipc": "3",
+    "issue": "Cumulative work_total decreased: 1,585,542.32 (February 2026) ΓåÆ 1,585,180.83 (March 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in March 2026? (3) Was the February 2026 value wrong?"
+  },
+  {
+    "id": 118,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "May 2026",
+    "project": "PZ-004",
+    "ipc": "4",
+    "issue": "Cumulative work_total decreased: 1,804,287.11 (April 2026) ΓåÆ 1,619,722 (May 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in May 2026? (3) Was the April 2026 value wrong?"
+  },
+  {
+    "id": 119,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-005",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 45,518,212.54 ΓåÆ 64,286,438.43",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 120,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-006",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 133,250,234 ΓåÆ 11,975,179",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 121,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-007",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 70,022,926 ΓåÆ 59,851,495 ΓåÆ 133,250,234",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 122,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "January 2026",
+    "project": "PZ-007",
+    "ipc": "1",
+    "issue": "Cumulative work_total decreased: 64,171,679.87 (January 2026) ΓåÆ 28,141,206.4 (January 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in January 2026? (3) Was the January 2026 value wrong?"
+  },
+  {
+    "id": 123,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-008",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 36,683,721.34 ΓåÆ 10,014,372.18 ΓåÆ 70,022,926",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 124,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-009",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 7,947,309.5 ΓåÆ 59,851,495 ΓåÆ 36,683,721.34",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 125,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-010",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 46,664,622 ΓåÆ 10,014,372.18 ΓåÆ 59,851,495",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 126,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-011",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 15,266,551.23 ΓåÆ 7,947,309.5 ΓåÆ 10,014,372.18",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 127,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-012",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 5,457,365 ΓåÆ 81,132,855.58 ΓåÆ 46,664,622 ΓåÆ 7,947,309.5",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 128,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "May 2026",
+    "project": "PZ-012",
+    "ipc": "7 ╪«╪¬╪º┘à┘è",
+    "issue": "Cumulative work_total decreased: 44,811,936.12 (April 2026) ΓåÆ 41,871,447.35 (May 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in May 2026? (3) Was the April 2026 value wrong?"
+  },
+  {
+    "id": 129,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-013",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 19,217,656.5 ΓåÆ 15,266,551.23 ΓåÆ 46,664,622",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 130,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-014",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 1,567,875.75 ΓåÆ 5,457,365 ΓåÆ 15,266,551.23",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 131,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-015",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 1,007,758.75 ΓåÆ 81,132,855.58 ΓåÆ 5,457,365",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 132,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-016",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 4,950,472 ΓåÆ 19,217,656.5 ΓåÆ 81,132,855.58",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 133,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-017",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 9,708,128.14 ΓåÆ 1,567,875.75 ΓåÆ 19,217,656.5",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 134,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-018",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 39,435,242 ΓåÆ 1,007,758.75 ΓåÆ 1,567,875.75",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 135,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-019",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 5,391,579.84 ΓåÆ 4,950,472 ΓåÆ 1,007,758.75",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 136,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-020",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 21,415,795 ΓåÆ 9,708,128.14 ΓåÆ 4,950,472",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 137,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-021",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 15,266,551.23 ΓåÆ 39,435,242 ΓåÆ 9,708,128.14",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 138,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-022",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 11,307,039 ΓåÆ 5,391,579.84 ΓåÆ 39,435,242 ΓåÆ 4,729,456",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 139,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "February 2026",
+    "project": "PZ-022",
+    "ipc": "2",
+    "issue": "Cumulative work_total decreased: 10,480,322.98 (January 2026) ΓåÆ 4,582,466.23 (February 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in February 2026? (3) Was the January 2026 value wrong?"
+  },
+  {
+    "id": 140,
+    "severity": "warning",
+    "type": "cumulative_decrease",
+    "month": "April 2026",
+    "project": "PZ-022",
+    "ipc": "╪«╪¬╪º┘à┘ë",
+    "issue": "Cumulative work_total decreased: 27,321,070.94 (March 2026) ΓåÆ 5,332,538.59 (April 2026)",
+    "fix": "Cumulative submitted work should not decrease month-to-month. Check: (1) Is this a different IPC number with lower scope? (2) Was there a correction in April 2026? (3) Was the March 2026 value wrong?"
+  },
+  {
+    "id": 141,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-023",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 2,717,649.9 ΓåÆ 21,415,795 ΓåÆ 4,729,456",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 142,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-024",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 2,347,500 ΓåÆ 15,266,551.23 ΓåÆ 21,415,795",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 143,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-025",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 15,218,744.71 ΓåÆ 11,307,039 ΓåÆ 15,266,551.23",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 144,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-026",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 6,659,440 ΓåÆ 2,717,649.9 ΓåÆ 11,307,039",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 145,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-027",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 1,748,352.03 ΓåÆ 2,347,500 ΓåÆ 2,717,649.9",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 146,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-028",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 8,500,000 ΓåÆ 15,218,744.71 ΓåÆ 2,347,500",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 147,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-029",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 5,614,452 ΓåÆ 6,659,440 ΓåÆ 15,218,744.71",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 148,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-030",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 1,748,352.03 ΓåÆ 6,659,440",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 149,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-031",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 8,500,000 ΓåÆ 1,748,352.03",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  },
+  {
+    "id": 150,
+    "severity": "medium",
+    "type": "contract_changed",
+    "month": "Cross-month",
+    "project": "PZ-032",
+    "ipc": "all",
+    "issue": "Contract value changed across months: 5,614,452 ΓåÆ 8,500,000",
+    "fix": "If this is due to a Variation Order (VO), document it. If it's a data entry error, correct the contract value in all months to the correct amount. The latest month's value should be the most accurate."
+  }
+]
