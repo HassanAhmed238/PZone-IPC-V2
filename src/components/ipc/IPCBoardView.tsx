@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Area,
@@ -33,12 +33,292 @@ import {
   Target,
   TrendingUp,
   Wallet,
+  Moon,
+  Sun,
   X,
 } from "lucide-react";
 import { fmtCompact, fmtNum, fmtPercent } from "@/lib/utils";
 import { type Invoice, useIPCBoardSnapshot } from "@/hooks/useIPC";
 import { computeFinancialSnapshot } from "@/hooks/useFinancialSnapshot";
 import { useMonthlyOverrides } from "@/hooks/useMonthlyOverrides";
+
+/* ═══════════════════════════════════════════════════════
+   Theme System — Light / Grey / Dark / Dark Grey
+   ═══════════════════════════════════════════════════════ */
+
+type BoardThemeMode = "light" | "grey" | "dark" | "dark-grey";
+
+interface BoardThemeColors {
+  pageBg: string;
+  pageGradient: string;
+  cardBg: string;
+  cardBorder: string;
+  cardShadow: string;
+  cardHoverBg: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  headerBg: string;
+  headerText: string;
+  headerSubtext: string;
+  headerAccent: string;
+  footerBg: string;
+  navBg: string;
+  navBorder: string;
+  navPillBg: string;
+  navPillBorder: string;
+  navPillText: string;
+  slicerBg: string;
+  slicerBorder: string;
+  selectBg: string;
+  selectBorder: string;
+  selectText: string;
+  tooltipBg: string;
+  tooltipBorder: string;
+  tooltipText: string;
+  tableBorder: string;
+  tableHeaderBg: string;
+  tableRowHover: string;
+  gridStroke: string;
+  axisTick: string;
+  dividerColor: string;
+  logoSrc: string;
+  logoFooterSrc: string;
+  logoFilter: string;
+}
+
+const THEMES: Record<BoardThemeMode, { label: string; icon: "sun" | "moon"; colors: BoardThemeColors }> = {
+  light: {
+    label: "Light",
+    icon: "sun",
+    colors: {
+      pageBg: "#f8fafc",
+      pageGradient: "radial-gradient(ellipse at top, #f1f5f9, #f8fafc 40%, #f8fafc)",
+      cardBg: "#ffffff",
+      cardBorder: "rgba(0,0,0,0.06)",
+      cardShadow: "0 1px 3px rgba(0,0,0,0.04)",
+      cardHoverBg: "#f8fafc",
+      textPrimary: "#0f172a",
+      textSecondary: "#64748b",
+      textMuted: "#94a3b8",
+      headerBg: "linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)",
+      headerText: "#ffffff",
+      headerSubtext: "rgba(147,197,253,0.7)",
+      headerAccent: "rgba(147,197,253,0.4)",
+      footerBg: "linear-gradient(135deg, #0f172a, #1e293b)",
+      navBg: "rgba(255,255,255,0.9)",
+      navBorder: "rgba(226,232,240,0.8)",
+      navPillBg: "#ffffff",
+      navPillBorder: "#e2e8f0",
+      navPillText: "#64748b",
+      slicerBg: "#f8fafc",
+      slicerBorder: "#e2e8f0",
+      selectBg: "#ffffff",
+      selectBorder: "#cbd5e1",
+      selectText: "#1e293b",
+      tooltipBg: "#ffffff",
+      tooltipBorder: "#e2e8f0",
+      tooltipText: "#334155",
+      tableBorder: "#f1f5f9",
+      tableHeaderBg: "#f8fafc",
+      tableRowHover: "rgba(248,250,252,0.8)",
+      gridStroke: "#e2e8f0",
+      axisTick: "#64748b",
+      dividerColor: "rgba(255,255,255,0.06)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
+  grey: {
+    label: "Grey",
+    icon: "moon",
+    colors: {
+      pageBg: "#e2e8f0",
+      pageGradient: "radial-gradient(ellipse at top, #cbd5e1, #e2e8f0 40%, #e2e8f0)",
+      cardBg: "#f1f5f9",
+      cardBorder: "rgba(0,0,0,0.08)",
+      cardShadow: "0 1px 4px rgba(0,0,0,0.06)",
+      cardHoverBg: "#e8ecf1",
+      textPrimary: "#0f172a",
+      textSecondary: "#475569",
+      textMuted: "#64748b",
+      headerBg: "linear-gradient(135deg, #1e293b 0%, #334155 40%, #1e293b 100%)",
+      headerText: "#ffffff",
+      headerSubtext: "rgba(147,197,253,0.8)",
+      headerAccent: "rgba(147,197,253,0.5)",
+      footerBg: "linear-gradient(135deg, #1e293b, #334155)",
+      navBg: "rgba(241,245,249,0.95)",
+      navBorder: "rgba(203,213,225,0.8)",
+      navPillBg: "#f8fafc",
+      navPillBorder: "#cbd5e1",
+      navPillText: "#475569",
+      slicerBg: "#f1f5f9",
+      slicerBorder: "#cbd5e1",
+      selectBg: "#ffffff",
+      selectBorder: "#94a3b8",
+      selectText: "#1e293b",
+      tooltipBg: "#f8fafc",
+      tooltipBorder: "#cbd5e1",
+      tooltipText: "#334155",
+      tableBorder: "#e2e8f0",
+      tableHeaderBg: "#e2e8f0",
+      tableRowHover: "rgba(241,245,249,0.8)",
+      gridStroke: "#cbd5e1",
+      axisTick: "#475569",
+      dividerColor: "rgba(255,255,255,0.08)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
+  dark: {
+    label: "Dark",
+    icon: "moon",
+    colors: {
+      pageBg: "#0f172a",
+      pageGradient: "radial-gradient(ellipse at top, #1e293b, #0f172a 40%, #0f172a)",
+      cardBg: "#1e293b",
+      cardBorder: "rgba(255,255,255,0.08)",
+      cardShadow: "0 1px 4px rgba(0,0,0,0.3)",
+      cardHoverBg: "#263548",
+      textPrimary: "#f1f5f9",
+      textSecondary: "#94a3b8",
+      textMuted: "#64748b",
+      headerBg: "linear-gradient(135deg, #0c1222 0%, #162032 40%, #0c1222 100%)",
+      headerText: "#f1f5f9",
+      headerSubtext: "rgba(147,197,253,0.7)",
+      headerAccent: "rgba(147,197,253,0.4)",
+      footerBg: "linear-gradient(135deg, #0c1222, #162032)",
+      navBg: "rgba(15,23,42,0.95)",
+      navBorder: "rgba(255,255,255,0.06)",
+      navPillBg: "#1e293b",
+      navPillBorder: "rgba(255,255,255,0.1)",
+      navPillText: "#94a3b8",
+      slicerBg: "#162032",
+      slicerBorder: "rgba(255,255,255,0.08)",
+      selectBg: "#1e293b",
+      selectBorder: "rgba(255,255,255,0.12)",
+      selectText: "#e2e8f0",
+      tooltipBg: "#1e293b",
+      tooltipBorder: "rgba(255,255,255,0.1)",
+      tooltipText: "#e2e8f0",
+      tableBorder: "rgba(255,255,255,0.06)",
+      tableHeaderBg: "#162032",
+      tableRowHover: "rgba(30,41,59,0.8)",
+      gridStroke: "rgba(255,255,255,0.08)",
+      axisTick: "#94a3b8",
+      dividerColor: "rgba(255,255,255,0.08)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
+  "dark-grey": {
+    label: "Dark Grey",
+    icon: "moon",
+    colors: {
+      pageBg: "#1a1a2e",
+      pageGradient: "radial-gradient(ellipse at top, #252547, #1a1a2e 40%, #1a1a2e)",
+      cardBg: "#252547",
+      cardBorder: "rgba(255,255,255,0.06)",
+      cardShadow: "0 1px 4px rgba(0,0,0,0.3)",
+      cardHoverBg: "#2d2d55",
+      textPrimary: "#e8e8f0",
+      textSecondary: "#9898b8",
+      textMuted: "#6868a0",
+      headerBg: "linear-gradient(135deg, #12122a 0%, #1e1e40 40%, #12122a 100%)",
+      headerText: "#e8e8f0",
+      headerSubtext: "rgba(160,170,255,0.7)",
+      headerAccent: "rgba(160,170,255,0.4)",
+      footerBg: "linear-gradient(135deg, #12122a, #1e1e40)",
+      navBg: "rgba(26,26,46,0.95)",
+      navBorder: "rgba(255,255,255,0.05)",
+      navPillBg: "#252547",
+      navPillBorder: "rgba(255,255,255,0.08)",
+      navPillText: "#9898b8",
+      slicerBg: "#1e1e3a",
+      slicerBorder: "rgba(255,255,255,0.06)",
+      selectBg: "#252547",
+      selectBorder: "rgba(255,255,255,0.1)",
+      selectText: "#d0d0e8",
+      tooltipBg: "#252547",
+      tooltipBorder: "rgba(255,255,255,0.08)",
+      tooltipText: "#d0d0e8",
+      tableBorder: "rgba(255,255,255,0.05)",
+      tableHeaderBg: "#1e1e3a",
+      tableRowHover: "rgba(37,37,71,0.8)",
+      gridStroke: "rgba(255,255,255,0.06)",
+      axisTick: "#9898b8",
+      dividerColor: "rgba(255,255,255,0.06)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
+};
+
+const THEME_STORAGE_KEY = "pzone_board_theme";
+
+function ThemeSwitcher({ current, onChange }: { current: BoardThemeMode; onChange: (mode: BoardThemeMode) => void }) {
+  const [open, setOpen] = useState(false);
+  const modes: BoardThemeMode[] = ["light", "grey", "dark", "dark-grey"];
+  const isDark = current === "dark" || current === "dark-grey";
+  return (
+    <div className="relative print:hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold backdrop-blur-xl transition-all hover:scale-105"
+        style={{
+          background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+          border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"}`,
+          color: isDark ? "#e2e8f0" : "#475569",
+        }}
+      >
+        {isDark ? <Moon size={14} /> : <Sun size={14} />}
+        {THEMES[current].label}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full z-50 mt-2 w-40 overflow-hidden rounded-xl shadow-xl"
+            style={{
+              background: isDark ? "#1e293b" : "#ffffff",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "#e2e8f0"}`,
+            }}
+          >
+            {modes.map((mode) => (
+              <button
+                key={mode}
+                onClick={() => { onChange(mode); setOpen(false); }}
+                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-all"
+                style={{
+                  color: current === mode ? "#2563eb" : (isDark ? "#cbd5e1" : "#475569"),
+                  background: current === mode ? (isDark ? "rgba(37,99,235,0.15)" : "rgba(37,99,235,0.06)") : "transparent",
+                }}
+              >
+                <span className="h-3 w-3 rounded-full" style={{
+                  background: THEMES[mode].colors.pageBg,
+                  border: `2px solid ${current === mode ? "#2563eb" : (isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1")}`,
+                }} />
+                {THEMES[mode].label}
+                {current === mode && <Check size={12} className="ml-auto" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+const BoardThemeContext = createContext<BoardThemeColors>(THEMES.light.colors);
+function useBoardTheme() { return useContext(BoardThemeContext); }
 
 const COLORS = ["#2563eb", "#16a34a", "#d97706", "#dc2626", "#7c3aed", "#0d9488", "#db2777", "#0891b2"];
 const AGING_COLORS = ["#16a34a", "#d97706", "#ea580c", "#dc2626"];
@@ -83,14 +363,15 @@ const invoiceMonth = (invoice: Invoice) => {
 };
 
 const ChartTooltip = ({ active, payload, label }: any) => {
+  const tc = useBoardTheme();
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl bg-white/80 p-3.5 text-xs shadow-lg backdrop-blur-xl" style={{ border: "1px solid rgba(0,0,0,0.06)" }}>
-      {label && <div className="mb-2 font-bold text-slate-700">{label}</div>}
+    <div className="rounded-xl p-3.5 text-xs shadow-lg backdrop-blur-xl" style={{ background: tc.tooltipBg, border: `1px solid ${tc.tooltipBorder}` }}>
+      {label && <div className="mb-2 font-bold" style={{ color: tc.tooltipText }}>{label}</div>}
       {payload.map((item: any, index: number) => (
         <div key={index} className="flex items-center justify-between gap-5 py-0.5">
-          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full" style={{ background: item.color }} /><span className="text-slate-600">{item.name}</span></span>
-          <span className="font-mono font-bold text-slate-900">
+          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-2 rounded-full" style={{ background: item.color }} /><span style={{ color: tc.textSecondary }}>{item.name}</span></span>
+          <span className="font-mono font-bold" style={{ color: tc.textPrimary }}>
             {typeof item.value === "number" ? fmtFull(item.value) : item.value}
           </span>
         </div>
@@ -122,6 +403,7 @@ function KPI({
   color: string;
   delay: number;
 }) {
+  const tc = useBoardTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
@@ -129,22 +411,21 @@ function KPI({
       transition={{ delay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
       className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1"
       style={{
-        background: `linear-gradient(135deg, white 0%, ${color}08 100%)`,
-        boxShadow: `0 1px 3px rgba(0,0,0,0.06), 0 8px 24px ${color}12, inset 0 1px 0 rgba(255,255,255,0.9)`,
+        background: `linear-gradient(135deg, ${tc.cardBg} 0%, ${color}08 100%)`,
+        boxShadow: `0 1px 3px rgba(0,0,0,0.06), 0 8px 24px ${color}12`,
         border: `1px solid ${color}18`,
       }}
     >
-      {/* Decorative corner accent */}
       <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-[0.07] transition-opacity group-hover:opacity-[0.12]" style={{ background: color }} />
       <div className="relative">
         <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110" style={{ background: `${color}14`, boxShadow: `0 4px 12px ${color}20` }}>
           <Icon size={19} style={{ color }} />
         </div>
-        <div className="mb-0.5 text-2xl font-black tracking-tight text-slate-900">{value}</div>
-        <div className="text-[11px] font-semibold text-slate-600">
-          {label} <span className="font-normal text-slate-400">/ {labelAr}</span>
+        <div className="mb-0.5 text-2xl font-black tracking-tight" style={{ color: tc.textPrimary }}>{value}</div>
+        <div className="text-[11px] font-semibold" style={{ color: tc.textSecondary }}>
+          {label} <span className="font-normal" style={{ color: tc.textMuted }}>/ {labelAr}</span>
         </div>
-        {sub && <div className="mt-1.5 text-[10px] font-mono text-slate-400">{sub}</div>}
+        {sub && <div className="mt-1.5 text-[10px] font-mono" style={{ color: tc.textMuted }}>{sub}</div>}
       </div>
     </motion.div>
   );
@@ -160,20 +441,20 @@ function ChartCard({ id, title, subtitle, icon: Icon, color, children, delay = 0
   delay?: number;
   onReset?: () => void;
 }) {
+  const tc = useBoardTheme();
   return (
     <motion.div
       id={id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="overflow-hidden rounded-2xl bg-white"
-      style={{ boxShadow: `0 1px 3px rgba(0,0,0,0.04), 0 6px 24px ${color}08`, border: `1px solid ${color}15` }}
+      className="overflow-hidden rounded-2xl"
+      style={{ background: tc.cardBg, boxShadow: tc.cardShadow, border: `1px solid ${tc.cardBorder}` }}
     >
-      {/* Card header with accent gradient */}
       <div className="relative px-5 pt-5 pb-3">
         <div className="absolute left-0 top-0 h-full w-1 rounded-r-full" style={{ background: `linear-gradient(180deg, ${color}, ${color}44)` }} />
         <div className="flex items-center justify-between gap-3">
-          <h3 className="flex items-center gap-2.5 text-sm font-bold text-slate-900">
+          <h3 className="flex items-center gap-2.5 text-sm font-bold" style={{ color: tc.textPrimary }}>
             <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: `${color}12` }}>
               <Icon size={14} style={{ color }} />
             </div>
@@ -190,7 +471,7 @@ function ChartCard({ id, title, subtitle, icon: Icon, color, children, delay = 0
             </button>
           )}
         </div>
-        {subtitle && <p className="mt-1 pl-[38px] text-[10px] text-slate-500">{subtitle}</p>}
+        {subtitle && <p className="mt-1 pl-[38px] text-[10px]" style={{ color: tc.textSecondary }}>{subtitle}</p>}
       </div>
       <div className="px-5 pb-5">{children}</div>
     </motion.div>
@@ -283,8 +564,8 @@ function invoiceMonthKey(invoice: Invoice) {
   return invoiceMonth(invoice)?.key || null;
 }
 
-function selectClassName() {
-  return "h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:shadow-md";
+function selectClassName(tc: BoardThemeColors) {
+  return `h-10 w-full rounded-xl px-3 text-xs font-semibold outline-none transition-all focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:shadow-md`;
 }
 
 function SlicerSelect({
@@ -300,10 +581,16 @@ function SlicerSelect({
   allLabel?: string;
   onChange: (value: string) => void;
 }) {
+  const tc = useBoardTheme();
   return (
     <label className="block min-w-0">
-      <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em] text-slate-600">{label}</span>
-      <select className={selectClassName()} value={value} onChange={(event) => onChange(event.target.value)}>
+      <span className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: tc.textSecondary }}>{label}</span>
+      <select
+        className={selectClassName(tc)}
+        style={{ background: tc.selectBg, border: `1px solid ${tc.selectBorder}`, color: tc.selectText }}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
         {allLabel && <option value={ALL_VALUE}>{allLabel}</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>{option.label}</option>
@@ -336,17 +623,18 @@ function SharedBoardSlicers({
   onChange: <K extends keyof BoardSlicerState>(key: K, value: BoardSlicerState[K]) => void;
   onReset: () => void;
 }) {
+  const tc = useBoardTheme();
   return (
-    <section className="overflow-hidden rounded-2xl bg-white" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)", border: "1px solid rgba(0,0,0,0.06)" }}>
-      <div className="border-b border-slate-100 px-5 py-4">
+    <section className="overflow-hidden rounded-2xl" style={{ background: tc.cardBg, boxShadow: tc.cardShadow, border: `1px solid ${tc.cardBorder}` }}>
+      <div className="px-5 py-4" style={{ borderBottom: `1px solid ${tc.tableBorder}` }}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: "linear-gradient(135deg, #2563eb12, #2563eb08)" }}>
               <Filter size={17} className="text-blue-600" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">Shared Filters / Slicers</h2>
-              <p className="text-[11px] text-slate-500">Read-only filters inside the shared snapshot</p>
+              <h2 className="text-sm font-bold" style={{ color: tc.textPrimary }}>Shared Filters / Slicers</h2>
+              <p className="text-[11px]" style={{ color: tc.textSecondary }}>Read-only filters inside the shared snapshot</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -357,7 +645,8 @@ function SharedBoardSlicers({
               type="button"
               onClick={onReset}
               disabled={activeCount === 0 && slicers.projectSort === DEFAULT_SLICERS.projectSort}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-xs font-bold transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ border: `1px solid ${tc.selectBorder}`, color: tc.textSecondary }}
             >
               <RotateCcw size={14} />
               Reset
@@ -383,10 +672,10 @@ function SharedBoardSlicers({
           ]}
           onChange={(value) => onChange("projectSort", value as BoardProjectSort)}
         />
-        <div className="rounded-xl p-3" style={{ background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", border: "1px solid #e2e8f0" }}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Active slicers</div>
-          <div className="mt-1 text-lg font-black text-slate-900">{activeCount}</div>
-          <div className="text-[10px] text-slate-400">Applied to KPIs, charts, alerts, and tables</div>
+        <div className="rounded-xl p-3" style={{ background: tc.slicerBg, border: `1px solid ${tc.slicerBorder}` }}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: tc.textSecondary }}>Active slicers</div>
+          <div className="mt-1 text-lg font-black" style={{ color: tc.textPrimary }}>{activeCount}</div>
+          <div className="text-[10px]" style={{ color: tc.textMuted }}>Applied to KPIs, charts, alerts, and tables</div>
         </div>
       </div>
     </section>
@@ -412,6 +701,7 @@ function ExecutiveBrief({
   highestOutstanding?: { label: string; value: number };
   largestGap?: { label: string; value: number };
 }) {
+  const tc = useBoardTheme();
   const tone = getTone(score);
   const rows = [
     { label: "Approved collection efficiency", value: fmtPct(collectionEfficiency), color: collectionEfficiency >= 0.75 ? "#16a34a" : "#d97706" },
@@ -465,15 +755,15 @@ function ExecutiveBrief({
       </div>
 
       {/* Board Brief — Editorial card */}
-      <div className="overflow-hidden rounded-2xl bg-white" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.06)" }}>
-        <div className="border-b border-slate-100 px-6 py-4">
+      <div className="overflow-hidden rounded-2xl" style={{ background: tc.cardBg, boxShadow: tc.cardShadow, border: `1px solid ${tc.cardBorder}` }}>
+        <div className="px-6 py-4" style={{ borderBottom: `1px solid ${tc.tableBorder}` }}>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-sm font-bold text-slate-900">Board Brief — ملخص تنفيذي</div>
-              <div className="text-[11px] text-slate-500">Cash, approvals, receivables, and immediate risk signals</div>
+              <div className="text-sm font-bold" style={{ color: tc.textPrimary }}>Board Brief — ملخص تنفيذي</div>
+              <div className="text-[11px]" style={{ color: tc.textSecondary }}>Cash, approvals, receivables, and immediate risk signals</div>
             </div>
             <div className="hidden rounded-xl border border-red-100 bg-red-50/50 px-3.5 py-2 text-right md:block">
-              <div className="text-[9px] uppercase tracking-wider text-slate-500">Highest Outstanding</div>
+              <div className="text-[9px] uppercase tracking-wider" style={{ color: tc.textSecondary }}>Highest Outstanding</div>
               <div className="font-mono text-xs font-bold text-red-600">{highestOutstanding ? `${highestOutstanding.label} / ${fmtMoney(highestOutstanding.value)}` : "-"}</div>
             </div>
           </div>
@@ -481,8 +771,8 @@ function ExecutiveBrief({
         <div className="p-6">
           <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
             {rows.map((row) => (
-              <div key={row.label} className="group flex items-center justify-between rounded-xl px-4 py-3.5 transition-colors hover:bg-slate-50" style={{ borderLeft: `3px solid ${row.color}` }}>
-                <span className="text-xs font-medium text-slate-600">{row.label}</span>
+              <div key={row.label} className="group flex items-center justify-between rounded-xl px-4 py-3.5 transition-colors" style={{ borderLeft: `3px solid ${row.color}`, background: tc.cardHoverBg }}>
+                <span className="text-xs font-medium" style={{ color: tc.textSecondary }}>{row.label}</span>
                 <span className="font-mono text-sm font-black" style={{ color: row.color }}>{row.value}</span>
               </div>
             ))}
@@ -490,11 +780,11 @@ function ExecutiveBrief({
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, #fef2f2, #fff1f2)", border: "1px solid #fecdd3" }}>
               <div className="text-[10px] font-bold uppercase tracking-wider text-red-700">Largest Approval Gap</div>
-              <div className="mt-1.5 font-mono text-xs font-black text-slate-900">{largestGap ? `${largestGap.label} / ${fmtPct(largestGap.value)}` : "-"}</div>
+              <div className="mt-1.5 font-mono text-xs font-black" style={{ color: tc.textPrimary }}>{largestGap ? `${largestGap.label} / ${fmtPct(largestGap.value)}` : "-"}</div>
             </div>
             <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, #fffbeb, #fef3c7)", border: "1px solid #fde68a" }}>
               <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Board Focus</div>
-              <div className="mt-1.5 text-xs font-semibold text-slate-700">{outstanding > collected ? "Collections pressure is the leading risk" : "Cash collection is tracking ahead of risk"}</div>
+              <div className="mt-1.5 text-xs font-semibold" style={{ color: tc.textPrimary }}>{outstanding > collected ? "Collections pressure is the leading risk" : "Cash collection is tracking ahead of risk"}</div>
             </div>
           </div>
         </div>
@@ -504,6 +794,7 @@ function ExecutiveBrief({
 }
 
 function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string | null; invoices: Invoice[]; onClose: () => void }) {
+  const tc = useBoardTheme();
   const projectInvoices = useMemo(() => {
     return invoices
       .filter((invoice) => invoice.project_code === projectCode)
@@ -553,19 +844,20 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 80 }}
             transition={{ type: "spring", damping: 30, stiffness: 280 }}
-            className="fixed bottom-0 right-0 top-0 z-50 w-full max-w-3xl overflow-y-auto border-l border-slate-200 bg-white shadow-2xl"
+            className="fixed bottom-0 right-0 top-0 z-50 w-full max-w-3xl overflow-y-auto shadow-2xl"
+            style={{ background: tc.pageBg, borderLeft: `1px solid ${tc.cardBorder}` }}
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 backdrop-blur-xl" style={{ background: tc.cardBg, borderBottom: `1px solid ${tc.cardBorder}` }}>
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
                   <Building2 size={20} className="text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-black text-slate-900">{projectCode}</h2>
-                  <p className="text-xs text-slate-500">{projectName}</p>
+                  <h2 className="text-lg font-black" style={{ color: tc.textPrimary }}>{projectCode}</h2>
+                  <p className="text-xs" style={{ color: tc.textSecondary }}>{projectName}</p>
                 </div>
               </div>
-              <button onClick={onClose} className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-900">
+              <button onClick={onClose} className="rounded-lg p-2 transition" style={{ color: tc.textMuted }}>
                 <X size={18} />
               </button>
             </div>
@@ -577,8 +869,8 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
                   ["Sector", sector, "#7c3aed"],
                   ["Contract Value", fmtMoney(contractValue), "#16a34a"],
                 ].map(([label, value, color]) => (
-                  <div key={label} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="mb-1 text-[10px] text-slate-500">{label}</div>
+                  <div key={label} className="rounded-lg p-3" style={{ background: tc.slicerBg, border: `1px solid ${tc.cardBorder}` }}>
+                    <div className="mb-1 text-[10px]" style={{ color: tc.textSecondary }}>{label}</div>
                     <div className="text-sm font-black" style={{ color }}>{value}</div>
                   </div>
                 ))}
@@ -594,9 +886,9 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
               <ChartCard title="Cumulative IPC Curve - منحنى المستخلصات" icon={TrendingUp} color="#7c3aed">
                 <ResponsiveContainer width="100%" height={260}>
                   <AreaChart data={curveData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 11 }} />
-                    <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={tc.gridStroke} />
+                    <XAxis dataKey="name" tick={{ fill: tc.axisTick, fontSize: 11 }} />
+                    <YAxis tick={{ fill: tc.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
                     <Tooltip content={<ChartTooltip />} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
                     <Area type="monotone" dataKey="Submitted" stroke="#2563eb" fill="#2563eb18" strokeWidth={2} />
@@ -611,27 +903,27 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
                   {projectInvoices.map((invoice, index) => {
                     const color = statusColor(invoice.status);
                     return (
-                      <div key={`${invoice.id}-${index}`} className="rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                      <div key={`${invoice.id}-${index}`} className="rounded-lg p-4" style={{ background: tc.slicerBg, border: `1px solid ${tc.cardBorder}` }}>
                         <div className="mb-3 flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-slate-900">IPC #{invoice.invoice_number || "-"}</span>
+                            <span className="text-sm font-black" style={{ color: tc.textPrimary }}>IPC #{invoice.invoice_number || "-"}</span>
                             <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ color, background: `${color}14` }}>
                               {statusLabel(invoice.status)}
                             </span>
                           </div>
-                          <span className="text-[10px] text-slate-400">{invoice.submitted_date || invoice.approval_date || "-"}</span>
+                          <span className="text-[10px]" style={{ color: tc.textMuted }}>{invoice.submitted_date || invoice.approval_date || "-"}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-center">
                           <div>
-                            <div className="text-[10px] text-slate-500">Submitted</div>
+                            <div className="text-[10px]" style={{ color: tc.textSecondary }}>Submitted</div>
                             <div className="font-mono text-xs font-black text-blue-600">{fmtMoney(invoice.work_total || 0)}</div>
                           </div>
                           <div>
-                            <div className="text-[10px] text-slate-500">Approved</div>
+                            <div className="text-[10px]" style={{ color: tc.textSecondary }}>Approved</div>
                             <div className="font-mono text-xs font-black text-green-600">{fmtMoney(invoice.approved_total || 0)}</div>
                           </div>
                           <div>
-                            <div className="text-[10px] text-slate-500">Collected</div>
+                            <div className="text-[10px]" style={{ color: tc.textSecondary }}>Collected</div>
                             <div className="font-mono text-xs font-black text-amber-600">{fmtMoney(invoice.total_collections || 0)}</div>
                           </div>
                         </div>
@@ -657,9 +949,9 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
                         <div key={item.name} className="flex items-center justify-between gap-3 text-xs">
                           <div className="flex min-w-0 items-center gap-2">
                             <span className="h-2 w-2 rounded-full" style={{ background: COLORS[index % COLORS.length] }} />
-                            <span className="truncate text-slate-600">{item.name}</span>
+                            <span className="truncate" style={{ color: tc.textSecondary }}>{item.name}</span>
                           </div>
-                          <span className="font-mono font-bold text-slate-900">{fmtMoney(item.value)}</span>
+                          <span className="font-mono font-bold" style={{ color: tc.textPrimary }}>{fmtMoney(item.value)}</span>
                         </div>
                       ))}
                     </div>
@@ -688,6 +980,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [drillSource, setDrillSource] = useState<DrillSource>(null);
   const [drillLabel, setDrillLabel] = useState("");
+  const [themeMode, setThemeMode] = useState<BoardThemeMode>(() => {
+    try { return (localStorage.getItem(THEME_STORAGE_KEY) as BoardThemeMode) || "light"; } catch { return "light"; }
+  });
+  const t = THEMES[themeMode].colors;
+  const switchTheme = useCallback((mode: BoardThemeMode) => {
+    setThemeMode(mode);
+    try { localStorage.setItem(THEME_STORAGE_KEY, mode); } catch {}
+  }, []);
 
   const drillDown = useCallback((source: DrillSource, key: keyof BoardSlicerState, value: string, label: string) => {
     setDrillSource(source);
@@ -1036,12 +1336,13 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at top, #f1f5f9, #f8fafc 40%, #f8fafc)" }}>
+    <BoardThemeContext.Provider value={t}>
+    <div className="min-h-screen" style={{ background: t.pageGradient }}>
       <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
         {/* ── Premium Report Header ── */}
         <motion.header id="overview" initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
           className="relative overflow-hidden rounded-2xl"
-          style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)", boxShadow: "0 4px 24px rgba(15,23,42,0.15), 0 1px 3px rgba(0,0,0,0.1)" }}
+          style={{ background: t.headerBg, boxShadow: "0 4px 24px rgba(15,23,42,0.15), 0 1px 3px rgba(0,0,0,0.1)" }}
         >
           {/* Gradient mesh accents */}
           <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
@@ -1052,21 +1353,22 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
 
           <div className="relative flex flex-col justify-between gap-5 p-6 md:flex-row md:items-center md:p-8">
             <div className="flex items-center gap-5">
-              <img src="/logos/pzone-horizontal-white.png" alt="P.ZONE" className="hidden h-14 drop-shadow-lg md:block" />
+              <img src={t.logoSrc} alt="P.ZONE" className="hidden h-14 drop-shadow-lg md:block" />
               <img src="/logos/pzone-vertical-black.png" alt="P.ZONE" className="h-16 brightness-0 invert drop-shadow-lg md:hidden" />
               <div className="hidden h-12 w-px bg-white/20 md:block" />
               <div>
-                <h1 className="text-xl font-black tracking-tight text-white md:text-2xl">IPC Board Report</h1>
-                <p className="text-[11px] text-blue-200/70">Read-only executive snapshot — لوحة مشاركة تنفيذية</p>
-                <p className="mt-0.5 text-[10px] text-blue-300/40">Developed By Eng AL Hassan A.Soliman</p>
+                <h1 className="text-xl font-black tracking-tight md:text-2xl" style={{ color: t.headerText }}>IPC Board Report</h1>
+                <p className="text-[11px]" style={{ color: t.headerSubtext }}>Read-only executive snapshot — لوحة مشاركة تنفيذية</p>
+                <p className="mt-0.5 text-[10px]" style={{ color: t.headerAccent }}>Developed By Eng AL Hassan A.Soliman</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-right backdrop-blur-xl">
-                <div className="text-[10px] uppercase tracking-widest text-blue-300/60">Report Date</div>
-                <div className="text-sm font-bold text-white">{new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</div>
-                {initialPage && initialPage !== "overview" && <div className="text-[10px] text-blue-300/50">Requested page: {initialPage}</div>}
+                <div className="text-[10px] uppercase tracking-widest" style={{ color: t.headerAccent }}>Report Date</div>
+                <div className="text-sm font-bold" style={{ color: t.headerText }}>{new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</div>
+                {initialPage && initialPage !== "overview" && <div className="text-[10px]" style={{ color: t.headerAccent }}>Requested page: {initialPage}</div>}
               </div>
+              <ThemeSwitcher current={themeMode} onChange={switchTheme} />
               <button
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-bold text-white backdrop-blur-xl transition hover:bg-white/20 print:hidden"
@@ -1082,7 +1384,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
         </motion.header>
 
         {/* ── Sticky Navigation ── */}
-        <div className="sticky top-0 z-30 -mx-6 border-b border-slate-200/80 bg-white/90 px-6 py-3 backdrop-blur-xl lg:-mx-8 lg:px-8" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
+        <div className="sticky top-0 z-30 -mx-6 px-6 py-3 backdrop-blur-xl lg:-mx-8 lg:px-8" style={{ background: t.navBg, borderBottom: `1px solid ${t.navBorder}`, boxShadow: "0 1px 8px rgba(0,0,0,0.04)" }}>
           <div className="flex flex-wrap items-center gap-2">
             {[
               ["Overview", "#overview", Gauge],
@@ -1093,13 +1395,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
               <a
                 key={label}
                 href={href}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-600 shadow-sm transition-all duration-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md"
+                className="inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold shadow-sm transition-all duration-200 hover:border-blue-300 hover:text-blue-600 hover:shadow-md"
+                style={{ background: t.navPillBg, border: `1px solid ${t.navPillBorder}`, color: t.navPillText }}
               >
                 <Icon size={13} />
                 {label}
               </a>
             ))}
-            <div className="ml-auto hidden text-[11px] text-slate-500 md:block">
+            <div className="ml-auto hidden text-[11px] md:block" style={{ color: t.textSecondary }}>
               {stats.projectCount} projects / {stats.ipcCount} IPCs / {fmtMoney(stats.contractValue)} contract value
             </div>
           </div>
@@ -1203,9 +1506,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                   setSlicers((prev) => ({ ...prev, monthTo: d.key }));
                 }
               }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} style={{ cursor: "pointer" }} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} />
+                <XAxis dataKey="month" tick={{ fill: t.axisTick, fontSize: 11 }} style={{ cursor: "pointer" }} />
+                <YAxis tick={{ fill: t.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="submitted" name="Submitted" stroke="#2563eb" strokeWidth={2} dot={{ r: 4, cursor: "pointer" }} activeDot={{ r: 7, strokeWidth: 2, stroke: "#fff" }} />
@@ -1214,7 +1517,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                 <Line type="monotone" dataKey="forecast" name="Forecast In" stroke="#0d9488" strokeWidth={2} strokeDasharray="6 4" dot={false} />
               </LineChart>
             </ResponsiveContainer>
-            <div className="mt-2 text-center text-[10px] text-slate-400">Click any data point to drill-down by month</div>
+            <div className="mt-2 text-center text-[10px]" style={{ color: t.textMuted }}>Click any data point to drill-down by month</div>
           </ChartCard>
 
           <ChartCard title="Cash Position: Actual + Forecast - المركز النقدي الفعلي والمتوقع" icon={Wallet} color="#0d9488" onReset={drillSource ? clearDrill : undefined}>
@@ -1226,9 +1529,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                   setSlicers((prev) => ({ ...prev, monthTo: d.key }));
                 }
               }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" tick={{ fill: "#64748b", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} />
+                <XAxis dataKey="month" tick={{ fill: t.axisTick, fontSize: 11 }} />
+                <YAxis tick={{ fill: t.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="actualIn" name="Actual In" fill="#16a34a" radius={[5, 5, 0, 0]} cursor="pointer" />
@@ -1247,9 +1550,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                   drillDown("sector", "sector", e.activePayload[0].payload.sector, e.activePayload[0].payload.sector);
                 }
               }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
-                <YAxis type="category" dataKey="sector" tick={{ fill: "#64748b", fontSize: 11 }} width={110} />
+                <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} horizontal={false} />
+                <XAxis type="number" tick={{ fill: t.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                <YAxis type="category" dataKey="sector" tick={{ fill: t.axisTick, fontSize: 11 }} width={110} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="contractValue" name="Contract Value" radius={[0, 6, 6, 0]} cursor="pointer">
@@ -1257,7 +1560,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <div className="mt-2 text-center text-[10px] text-slate-400">Click any bar to drill-down by sector</div>
+            <div className="mt-2 text-center text-[10px]" style={{ color: t.textMuted }}>Click any bar to drill-down by sector</div>
           </ChartCard>
 
           <ChartCard title="Status Distribution - توزيع الحالات" icon={Check} color="#16a34a" onReset={drillSource ? clearDrill : undefined}>
@@ -1286,19 +1589,20 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                     <button
                       key={entry.name}
                       onClick={() => drillDown("status", "status", rawStatus, entry.name)}
-                      className="flex w-full items-center justify-between rounded-lg border border-slate-100 bg-slate-50/70 px-3 py-2 text-xs transition-all hover:border-green-300 hover:bg-green-50/50 hover:shadow-sm"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs transition-all hover:shadow-sm"
+                      style={{ background: t.slicerBg, border: `1px solid ${t.cardBorder}` }}
                     >
                       <div className="flex items-center gap-2">
                         <span className="h-2.5 w-2.5 rounded-full" style={{ background: statusColor(entry.name) }} />
-                        <span className="text-slate-700">{entry.name}</span>
+                        <span style={{ color: t.textSecondary }}>{entry.name}</span>
                       </div>
-                      <span className="font-bold text-slate-900">{entry.value}</span>
+                      <span className="font-bold" style={{ color: t.textPrimary }}>{entry.value}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
-            <div className="mt-2 text-center text-[10px] text-slate-400">Click any slice or legend item to drill-down by status</div>
+            <div className="mt-2 text-center text-[10px]" style={{ color: t.textMuted }}>Click any slice or legend item to drill-down by status</div>
           </ChartCard>
 
           <ChartCard title="Collection by Client - التحصيل حسب العميل" icon={Wallet} color="#d97706" onReset={drillSource ? clearDrill : undefined}>
@@ -1308,9 +1612,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                   drillDown("client", "client", e.activePayload[0].payload.client, e.activePayload[0].payload.client);
                 }
               }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-                <XAxis type="number" tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
-                <YAxis type="category" dataKey="client" tick={{ fill: "#64748b", fontSize: 11 }} width={130} />
+                <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} horizontal={false} />
+                <XAxis type="number" tick={{ fill: t.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                <YAxis type="category" dataKey="client" tick={{ fill: t.axisTick, fontSize: 11 }} width={130} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="approved" name="Approved Net" fill="#16a34a88" radius={[0, 6, 6, 0]} cursor="pointer" />
@@ -1318,7 +1622,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                 <Bar dataKey="outstanding" name="Outstanding" fill="#dc262688" radius={[0, 6, 6, 0]} cursor="pointer" />
               </BarChart>
             </ResponsiveContainer>
-            <div className="mt-2 text-center text-[10px] text-slate-400">Click any bar to drill-down by client</div>
+            <div className="mt-2 text-center text-[10px]" style={{ color: t.textMuted }}>Click any bar to drill-down by client</div>
           </ChartCard>
 
           <ChartCard id="risk" title="Certified Analysis - تحليل المعتمد" subtitle="Gross, deductions, net, approved and collected movement" icon={FileSpreadsheet} color="#0891b2" onReset={drillSource ? clearDrill : undefined}>
@@ -1328,8 +1632,8 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                 const pct = (Math.abs(item.value) / maxValue) * 100;
                 return (
                   <div key={item.name} className="flex items-center gap-3">
-                    <div className="w-28 shrink-0 text-right text-[10px] font-bold text-slate-500">{item.name}</div>
-                    <div className="h-8 flex-1 overflow-hidden rounded-lg bg-slate-100">
+                    <div className="w-28 shrink-0 text-right text-[10px] font-bold" style={{ color: t.textSecondary }}>{item.name}</div>
+                    <div className="h-8 flex-1 overflow-hidden rounded-lg" style={{ background: t.slicerBg }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
@@ -1349,9 +1653,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
           <ChartCard title="Collection Aging - أعمار الديون" subtitle="Outstanding approved receivables by age bucket" icon={Clock} color="#d97706" onReset={drillSource ? clearDrill : undefined}>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={agingData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="range" tick={{ fill: "#64748b", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
+                <CartesianGrid strokeDasharray="3 3" stroke={t.gridStroke} />
+                <XAxis dataKey="range" tick={{ fill: t.axisTick, fontSize: 11 }} />
+                <YAxis tick={{ fill: t.axisTick, fontSize: 11 }} tickFormatter={(value) => fmtMoney(value)} />
                 <Tooltip content={<ChartTooltip />} />
                 <Bar dataKey="amount" name="Outstanding" radius={[6, 6, 0, 0]}>
                   {agingData.map((entry, index) => <Cell key={index} fill={entry.fill} />)}
@@ -1480,15 +1784,16 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
         {showTables && <ProjectPanel projectCode={selectedProject} invoices={invoices} onClose={() => setSelectedProject(null)} />}
 
         {/* ── Footer ── */}
-        <footer className="-mx-6 -mb-6 mt-10 px-6 pb-6 pt-6 text-center lg:-mx-8 lg:-mb-8 lg:px-8" style={{ background: "linear-gradient(135deg, #0f172a, #1e293b)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <img src="/logos/pzone-horizontal-white.png" alt="P.ZONE" className="mx-auto mb-3 h-8 opacity-60" />
-          <p className="text-[11px] text-slate-500">
+        <footer className="-mx-6 -mb-6 mt-10 px-6 pb-6 pt-6 text-center lg:-mx-8 lg:-mb-8 lg:px-8" style={{ background: t.footerBg, borderTop: `1px solid ${t.dividerColor}` }}>
+          <img src={t.logoFooterSrc} alt="P.ZONE" className="mx-auto mb-3 h-8 opacity-60" />
+          <p className="text-[11px]" style={{ color: t.textMuted }}>
             IPC Board Report — Read-only online snapshot — {new Date().toLocaleString("en-GB")}
           </p>
-          <p className="mt-1.5 text-[10px] font-medium text-blue-400/50">Developed By Eng AL Hassan A.Soliman</p>
+          <p className="mt-1.5 text-[10px] font-medium" style={{ color: t.headerAccent }}>Developed By Eng AL Hassan A.Soliman</p>
           <div className="mx-auto mt-3 h-px w-40 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
         </footer>
       </div>
     </div>
+    </BoardThemeContext.Provider>
   );
 }
