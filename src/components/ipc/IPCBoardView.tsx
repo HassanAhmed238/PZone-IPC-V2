@@ -397,7 +397,7 @@ function ThemeSwitcher({ current, onChange }: { current: BoardThemeMode; onChang
   useEffect(() => {
     if (open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 8, left: Math.max(rect.right - 180, 8) });
+      setPos({ top: rect.bottom + 8, left: Math.max(rect.right - 200, 8) });
     }
   }, [open]);
 
@@ -418,44 +418,60 @@ function ThemeSwitcher({ current, onChange }: { current: BoardThemeMode; onChang
       </button>
       {open && createPortal(
         <>
-          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
-          <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="fixed z-[9999] w-44 overflow-hidden rounded-xl shadow-2xl"
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+            onClick={() => setOpen(false)}
+          />
+          <div
             style={{
+              position: "fixed",
+              zIndex: 9999,
               top: pos.top,
               left: pos.left,
+              width: 196,
               background: isDark ? "#1e293b" : "#ffffff",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "#e2e8f0"}`,
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "#e2e8f0"}`,
+              borderRadius: 12,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.15)",
+              padding: "4px 0",
             }}
           >
-            {modes.map((mode) => {
-              const themeIsDark = mode === "dark" || mode === "dark-grey" || mode === "golden" || mode === "pzone";
-              return (
-                <button
-                  key={mode}
-                  onClick={() => { onChange(mode); setOpen(false); }}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-all"
-                  style={{
-                    color: current === mode ? "#2563eb" : (isDark ? "#cbd5e1" : "#475569"),
-                    background: current === mode ? (isDark ? "rgba(37,99,235,0.15)" : "rgba(37,99,235,0.06)") : "transparent",
-                  }}
-                >
-                  <span className="h-3.5 w-3.5 rounded-full shrink-0" style={{
-                    background: mode === "pzone"
-                      ? "linear-gradient(135deg, #0d9488, #7c3aed, #db2777)"
-                      : THEMES[mode].colors.pageBg,
-                    border: `2px solid ${current === mode ? "#2563eb" : (isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1")}`,
-                  }} />
-                  {THEMES[mode].label}
-                  {current === mode && <Check size={12} className="ml-auto" />}
-                </button>
-              );
-            })}
-          </motion.div>
+            {modes.map((mode) => (
+              <button
+                key={mode}
+                onClick={() => { onChange(mode); setOpen(false); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  width: "100%",
+                  padding: "10px 14px",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: current === mode ? "#3b82f6" : (isDark ? "#cbd5e1" : "#475569"),
+                  background: current === mode
+                    ? (isDark ? "rgba(59,130,246,0.15)" : "rgba(59,130,246,0.06)")
+                    : "transparent",
+                  textAlign: "left" as const,
+                }}
+              >
+                <span style={{
+                  width: 14,
+                  height: 14,
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                  background: mode === "pzone"
+                    ? "linear-gradient(135deg, #0d9488, #7c3aed, #db2777)"
+                    : THEMES[mode].colors.pageBg,
+                  border: `2px solid ${current === mode ? "#3b82f6" : (isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1")}`,
+                }} />
+                <span style={{ flex: 1 }}>{THEMES[mode].label}</span>
+                {current === mode && <Check size={12} style={{ opacity: 0.7 }} />}
+              </button>
+            ))}
+          </div>
         </>,
         document.body,
       )}
