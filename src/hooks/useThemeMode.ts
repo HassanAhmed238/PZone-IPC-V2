@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 
-export type ThemeMode = "light" | "dark";
+export type ThemeMode = "light" | "grey" | "dark" | "dark-grey" | "baby-blue" | "golden" | "pzone";
 
 const THEME_KEY = "theme";
 const THEME_EVENT = "pzone-theme-change";
 
+const VALID_MODES: ThemeMode[] = ["light", "grey", "dark", "dark-grey", "baby-blue", "golden", "pzone"];
+
 function isThemeMode(value: string | null): value is ThemeMode {
-  return value === "light" || value === "dark";
+  return VALID_MODES.includes(value as ThemeMode);
 }
+
+/** Which modes use a dark color scheme (for system dark-mode compat) */
+const DARK_MODES: ThemeMode[] = ["dark", "dark-grey", "golden", "pzone"];
 
 export function getThemeMode(): ThemeMode {
   try {
@@ -21,9 +26,10 @@ export function getThemeMode(): ThemeMode {
 
 export function applyThemeMode(theme: ThemeMode): void {
   const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
+  const isDark = DARK_MODES.includes(theme);
+  root.classList.toggle("dark", isDark);
   root.dataset.theme = theme;
-  root.style.colorScheme = theme;
+  root.style.colorScheme = isDark ? "dark" : "light";
 
   try {
     localStorage.setItem(THEME_KEY, theme);
@@ -68,5 +74,5 @@ export function useThemeMode() {
 
   const toggleTheme = () => setMode(theme === "dark" ? "light" : "dark");
 
-  return { theme, setTheme: setMode, toggleTheme };
+  return { theme, setTheme: setMode, toggleTheme, isDark: DARK_MODES.includes(theme) };
 }

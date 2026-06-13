@@ -12,7 +12,18 @@ export default function DashboardLayout() {
   const sidebarWidth = collapsed ? 72 : 260;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen bg-background">
+      {/* ── Crystal Lagoon Video Background ── */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 h-full w-full object-cover print:hidden"
+        style={{ zIndex: 0, opacity: 0.06, pointerEvents: "none" }}
+      >
+        <source src="https://videos.pexels.com/video-files/1918465/1918465-uhd_2560_1440_24fps.mp4" type="video/mp4" />
+      </video>
       <WhatsNewDialog />
       <AppSidebar 
         collapsed={collapsed} 

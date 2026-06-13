@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Area,
@@ -43,10 +44,10 @@ import { computeFinancialSnapshot } from "@/hooks/useFinancialSnapshot";
 import { useMonthlyOverrides } from "@/hooks/useMonthlyOverrides";
 
 /* ═══════════════════════════════════════════════════════
-   Theme System — Light / Grey / Dark / Dark Grey
+   Theme System — 7 Premium Modes
    ═══════════════════════════════════════════════════════ */
 
-type BoardThemeMode = "light" | "grey" | "dark" | "dark-grey";
+type BoardThemeMode = "light" | "grey" | "dark" | "dark-grey" | "baby-blue" | "golden" | "pzone";
 
 interface BoardThemeColors {
   pageBg: string;
@@ -256,17 +257,154 @@ const THEMES: Record<BoardThemeMode, { label: string; icon: "sun" | "moon"; colo
       logoFilter: "none",
     },
   },
+  "baby-blue": {
+    label: "Baby Blue",
+    icon: "sun",
+    colors: {
+      pageBg: "#eff6ff",
+      pageGradient: "radial-gradient(ellipse at top, #dbeafe, #eff6ff 40%, #eff6ff)",
+      cardBg: "#f0f7ff",
+      cardBorder: "rgba(59,130,246,0.12)",
+      cardShadow: "0 1px 4px rgba(59,130,246,0.08)",
+      cardHoverBg: "#e0efff",
+      textPrimary: "#0c2d6b",
+      textSecondary: "#3b6cb5",
+      textMuted: "#7ba4d9",
+      headerBg: "linear-gradient(135deg, #1e40af 0%, #2563eb 40%, #1e40af 100%)",
+      headerText: "#ffffff",
+      headerSubtext: "rgba(191,219,254,0.8)",
+      headerAccent: "rgba(191,219,254,0.5)",
+      footerBg: "linear-gradient(135deg, #1e3a8a, #1e40af)",
+      navBg: "rgba(239,246,255,0.95)",
+      navBorder: "rgba(59,130,246,0.15)",
+      navPillBg: "#f0f7ff",
+      navPillBorder: "rgba(59,130,246,0.2)",
+      navPillText: "#3b6cb5",
+      slicerBg: "#e0efff",
+      slicerBorder: "rgba(59,130,246,0.15)",
+      selectBg: "#ffffff",
+      selectBorder: "rgba(59,130,246,0.25)",
+      selectText: "#0c2d6b",
+      tooltipBg: "#f0f7ff",
+      tooltipBorder: "rgba(59,130,246,0.2)",
+      tooltipText: "#0c2d6b",
+      tableBorder: "rgba(59,130,246,0.1)",
+      tableHeaderBg: "#dbeafe",
+      tableRowHover: "rgba(219,234,254,0.6)",
+      gridStroke: "rgba(59,130,246,0.15)",
+      axisTick: "#3b6cb5",
+      dividerColor: "rgba(59,130,246,0.1)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
+  golden: {
+    label: "Golden",
+    icon: "moon",
+    colors: {
+      pageBg: "#1c1917",
+      pageGradient: "radial-gradient(ellipse at top, #292524, #1c1917 40%, #1c1917)",
+      cardBg: "#292524",
+      cardBorder: "rgba(197,168,128,0.15)",
+      cardShadow: "0 1px 4px rgba(0,0,0,0.4)",
+      cardHoverBg: "#332e2b",
+      textPrimary: "#fef3c7",
+      textSecondary: "#c5a880",
+      textMuted: "#92785a",
+      headerBg: "linear-gradient(135deg, #1c1917 0%, #292524 40%, #1c1917 100%)",
+      headerText: "#fef3c7",
+      headerSubtext: "rgba(197,168,128,0.7)",
+      headerAccent: "rgba(197,168,128,0.4)",
+      footerBg: "linear-gradient(135deg, #1c1917, #292524)",
+      navBg: "rgba(28,25,23,0.95)",
+      navBorder: "rgba(197,168,128,0.12)",
+      navPillBg: "#292524",
+      navPillBorder: "rgba(197,168,128,0.15)",
+      navPillText: "#c5a880",
+      slicerBg: "#232120",
+      slicerBorder: "rgba(197,168,128,0.12)",
+      selectBg: "#292524",
+      selectBorder: "rgba(197,168,128,0.2)",
+      selectText: "#fef3c7",
+      tooltipBg: "#292524",
+      tooltipBorder: "rgba(197,168,128,0.15)",
+      tooltipText: "#fef3c7",
+      tableBorder: "rgba(197,168,128,0.08)",
+      tableHeaderBg: "#232120",
+      tableRowHover: "rgba(41,37,36,0.8)",
+      gridStroke: "rgba(197,168,128,0.12)",
+      axisTick: "#c5a880",
+      dividerColor: "rgba(197,168,128,0.1)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "sepia(0.3) brightness(1.1)",
+    },
+  },
+  pzone: {
+    label: "P.ZONE",
+    icon: "moon",
+    colors: {
+      pageBg: "#0a0e1a",
+      pageGradient: "radial-gradient(ellipse at top, #141b2d, #0a0e1a 40%, #0a0e1a)",
+      cardBg: "#111827",
+      cardBorder: "rgba(139,92,246,0.12)",
+      cardShadow: "0 1px 6px rgba(139,92,246,0.1)",
+      cardHoverBg: "#1a2236",
+      textPrimary: "#e8def8",
+      textSecondary: "#a78bfa",
+      textMuted: "#7c5cbf",
+      headerBg: "linear-gradient(135deg, #0d9488 0%, #7c3aed 35%, #db2777 70%, #ea580c 100%)",
+      headerText: "#ffffff",
+      headerSubtext: "rgba(232,222,248,0.8)",
+      headerAccent: "rgba(167,139,250,0.5)",
+      footerBg: "linear-gradient(135deg, #0d9488, #7c3aed, #db2777)",
+      navBg: "rgba(10,14,26,0.95)",
+      navBorder: "rgba(139,92,246,0.1)",
+      navPillBg: "#111827",
+      navPillBorder: "rgba(139,92,246,0.15)",
+      navPillText: "#a78bfa",
+      slicerBg: "#141b2d",
+      slicerBorder: "rgba(139,92,246,0.1)",
+      selectBg: "#111827",
+      selectBorder: "rgba(139,92,246,0.2)",
+      selectText: "#e8def8",
+      tooltipBg: "#111827",
+      tooltipBorder: "rgba(139,92,246,0.15)",
+      tooltipText: "#e8def8",
+      tableBorder: "rgba(139,92,246,0.06)",
+      tableHeaderBg: "#141b2d",
+      tableRowHover: "rgba(17,24,39,0.8)",
+      gridStroke: "rgba(139,92,246,0.1)",
+      axisTick: "#a78bfa",
+      dividerColor: "rgba(139,92,246,0.08)",
+      logoSrc: "/logos/pzone-horizontal-white.png",
+      logoFooterSrc: "/logos/pzone-horizontal-white.png",
+      logoFilter: "none",
+    },
+  },
 };
 
 const THEME_STORAGE_KEY = "pzone_board_theme";
 
 function ThemeSwitcher({ current, onChange }: { current: BoardThemeMode; onChange: (mode: BoardThemeMode) => void }) {
   const [open, setOpen] = useState(false);
-  const modes: BoardThemeMode[] = ["light", "grey", "dark", "dark-grey"];
-  const isDark = current === "dark" || current === "dark-grey";
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const modes: BoardThemeMode[] = ["light", "baby-blue", "grey", "dark", "dark-grey", "golden", "pzone"];
+  const isDark = current === "dark" || current === "dark-grey" || current === "golden" || current === "pzone";
+
+  useEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 8, left: Math.max(rect.right - 180, 8) });
+    }
+  }, [open]);
+
   return (
-    <div className="relative print:hidden">
+    <div className="print:hidden">
       <button
+        ref={btnRef}
         onClick={() => setOpen(!open)}
         className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold backdrop-blur-xl transition-all hover:scale-105"
         style={{
@@ -278,41 +416,49 @@ function ThemeSwitcher({ current, onChange }: { current: BoardThemeMode; onChang
         {isDark ? <Moon size={14} /> : <Sun size={14} />}
         {THEMES[current].label}
       </button>
-      <AnimatePresence>
-        {open && (
+      {open && createPortal(
+        <>
+          <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
           <motion.div
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full z-50 mt-2 w-40 overflow-hidden rounded-xl shadow-xl"
+            className="fixed z-[9999] w-44 overflow-hidden rounded-xl shadow-2xl"
             style={{
+              top: pos.top,
+              left: pos.left,
               background: isDark ? "#1e293b" : "#ffffff",
               border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "#e2e8f0"}`,
             }}
           >
-            {modes.map((mode) => (
-              <button
-                key={mode}
-                onClick={() => { onChange(mode); setOpen(false); }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-all"
-                style={{
-                  color: current === mode ? "#2563eb" : (isDark ? "#cbd5e1" : "#475569"),
-                  background: current === mode ? (isDark ? "rgba(37,99,235,0.15)" : "rgba(37,99,235,0.06)") : "transparent",
-                }}
-              >
-                <span className="h-3 w-3 rounded-full" style={{
-                  background: THEMES[mode].colors.pageBg,
-                  border: `2px solid ${current === mode ? "#2563eb" : (isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1")}`,
-                }} />
-                {THEMES[mode].label}
-                {current === mode && <Check size={12} className="ml-auto" />}
-              </button>
-            ))}
+            {modes.map((mode) => {
+              const themeIsDark = mode === "dark" || mode === "dark-grey" || mode === "golden" || mode === "pzone";
+              return (
+                <button
+                  key={mode}
+                  onClick={() => { onChange(mode); setOpen(false); }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-all"
+                  style={{
+                    color: current === mode ? "#2563eb" : (isDark ? "#cbd5e1" : "#475569"),
+                    background: current === mode ? (isDark ? "rgba(37,99,235,0.15)" : "rgba(37,99,235,0.06)") : "transparent",
+                  }}
+                >
+                  <span className="h-3.5 w-3.5 rounded-full shrink-0" style={{
+                    background: mode === "pzone"
+                      ? "linear-gradient(135deg, #0d9488, #7c3aed, #db2777)"
+                      : THEMES[mode].colors.pageBg,
+                    border: `2px solid ${current === mode ? "#2563eb" : (isDark ? "rgba(255,255,255,0.2)" : "#cbd5e1")}`,
+                  }} />
+                  {THEMES[mode].label}
+                  {current === mode && <Check size={12} className="ml-auto" />}
+                </button>
+              );
+            })}
           </motion.div>
-        )}
-      </AnimatePresence>
-      {open && <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />}
+        </>,
+        document.body,
+      )}
     </div>
   );
 }
@@ -1337,7 +1483,19 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
 
   return (
     <BoardThemeContext.Provider value={t}>
-    <div className="min-h-screen" style={{ background: t.pageGradient }}>
+    <div className="relative min-h-screen" style={{ background: t.pageGradient }}>
+      {/* ── Crystal Lagoon Video Background ── */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 h-full w-full object-cover print:hidden"
+        style={{ zIndex: 0, opacity: 0.12, pointerEvents: "none" }}
+      >
+        <source src="https://videos.pexels.com/video-files/1918465/1918465-uhd_2560_1440_24fps.mp4" type="video/mp4" />
+      </video>
+      <div className="relative" style={{ zIndex: 1 }}>
       <div className="mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
         {/* ── Premium Report Header ── */}
         <motion.header id="overview" initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
@@ -1795,6 +1953,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
           <div className="mx-auto mt-3 h-px w-40 bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
         </footer>
       </div>
+      </div>{/* close z-index wrapper */}
     </div>
     </BoardThemeContext.Provider>
   );
