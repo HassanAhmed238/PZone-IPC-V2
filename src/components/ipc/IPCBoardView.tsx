@@ -693,7 +693,7 @@ function DrillDownBanner({ source, label, onClear }: { source: DrillSource; labe
           <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
             Drill-Down Active — {iconLabel[source]}
           </div>
-          <div className="text-xs font-semibold text-slate-700">
+          <div className="text-xs font-semibold" style={{ color: t.textPrimary }}>
             Filtered by: <span className="font-black" style={{ color: accent }}>{label}</span>
           </div>
         </div>
@@ -924,9 +924,9 @@ function ExecutiveBrief({
               <div className="text-sm font-bold" style={{ color: tc.textPrimary }}>Board Brief — ملخص تنفيذي</div>
               <div className="text-[11px]" style={{ color: tc.textSecondary }}>Cash, approvals, receivables, and immediate risk signals</div>
             </div>
-            <div className="hidden rounded-xl border border-red-100 bg-red-50/50 px-3.5 py-2 text-right md:block">
+            <div className="hidden rounded-xl px-3.5 py-2 text-right md:block" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
               <div className="text-[9px] uppercase tracking-wider" style={{ color: tc.textSecondary }}>Highest Outstanding</div>
-              <div className="font-mono text-xs font-bold text-red-600">{highestOutstanding ? `${highestOutstanding.label} / ${fmtMoney(highestOutstanding.value)}` : "-"}</div>
+              <div className="font-mono text-xs font-bold" style={{ color: "#dc2626" }}>{highestOutstanding ? `${highestOutstanding.label} / ${fmtMoney(highestOutstanding.value)}` : "-"}</div>
             </div>
           </div>
         </div>
@@ -940,12 +940,12 @@ function ExecutiveBrief({
             ))}
           </div>
           <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-            <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, #fef2f2, #fff1f2)", border: "1px solid #fecdd3" }}>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-red-700">Largest Approval Gap</div>
+            <div className="rounded-xl p-4" style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.15)" }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#dc2626" }}>Largest Approval Gap</div>
               <div className="mt-1.5 font-mono text-xs font-black" style={{ color: tc.textPrimary }}>{largestGap ? `${largestGap.label} / ${fmtPct(largestGap.value)}` : "-"}</div>
             </div>
-            <div className="rounded-xl p-4" style={{ background: "linear-gradient(135deg, #fffbeb, #fef3c7)", border: "1px solid #fde68a" }}>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700">Board Focus</div>
+            <div className="rounded-xl p-4" style={{ background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.15)" }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#d97706" }}>Board Focus</div>
               <div className="mt-1.5 text-xs font-semibold" style={{ color: tc.textPrimary }}>{outstanding > collected ? "Collections pressure is the leading risk" : "Cash collection is tracking ahead of risk"}</div>
             </div>
           </div>
@@ -1011,8 +1011,8 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
           >
             <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 backdrop-blur-xl" style={{ background: tc.cardBg, borderBottom: `1px solid ${tc.cardBorder}` }}>
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                  <Building2 size={20} className="text-blue-600" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl" style={{ background: "rgba(37,99,235,0.1)" }}>
+                  <Building2 size={20} style={{ color: "#2563eb" }} />
                 </div>
                 <div>
                   <h2 className="text-lg font-black" style={{ color: tc.textPrimary }}>{projectCode}</h2>
@@ -1078,15 +1078,15 @@ function ProjectPanel({ projectCode, invoices, onClose }: { projectCode: string 
                         <div className="grid grid-cols-3 gap-2 text-center">
                           <div>
                             <div className="text-[10px]" style={{ color: tc.textSecondary }}>Submitted</div>
-                            <div className="font-mono text-xs font-black text-blue-600">{fmtMoney(invoice.work_total || 0)}</div>
+                            <div className="font-mono text-xs font-black" style={{ color: "#2563eb" }}>{fmtMoney(invoice.work_total || 0)}</div>
                           </div>
                           <div>
                             <div className="text-[10px]" style={{ color: tc.textSecondary }}>Approved</div>
-                            <div className="font-mono text-xs font-black text-green-600">{fmtMoney(invoice.approved_total || 0)}</div>
+                            <div className="font-mono text-xs font-black" style={{ color: "#16a34a" }}>{fmtMoney(invoice.approved_total || 0)}</div>
                           </div>
                           <div>
                             <div className="text-[10px]" style={{ color: tc.textSecondary }}>Collected</div>
-                            <div className="font-mono text-xs font-black text-amber-600">{fmtMoney(invoice.total_collections || 0)}</div>
+                            <div className="font-mono text-xs font-black" style={{ color: "#d97706" }}>{fmtMoney(invoice.total_collections || 0)}</div>
                           </div>
                         </div>
                       </div>
@@ -1442,14 +1442,14 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center" style={{ background: "radial-gradient(ellipse at top, #f1f5f9, #f8fafc 50%)" }}>
+      <div className="flex min-h-screen items-center justify-center" style={{ background: t.pageBg }}>
         <div className="text-center">
           <div className="relative mx-auto mb-6 h-16 w-16">
             <div className="absolute inset-0 animate-spin rounded-full" style={{ border: "2px solid transparent", borderTopColor: "#2563eb", borderRightColor: "#7c3aed" }} />
             <div className="absolute inset-2 animate-spin rounded-full" style={{ border: "2px solid transparent", borderBottomColor: "#0d9488", animationDirection: "reverse", animationDuration: "1.5s" }} />
           </div>
-          <p className="text-sm font-semibold text-slate-500">Loading board data...</p>
-          <p className="mt-1 text-[11px] text-slate-400">Preparing your executive snapshot</p>
+          <p className="text-sm font-semibold" style={{ color: t.textSecondary }}>Loading board data...</p>
+          <p className="mt-1 text-[11px]" style={{ color: t.textMuted }}>Preparing your executive snapshot</p>
         </div>
       </div>
     );
@@ -1482,13 +1482,13 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
     const iconColor = isRevoked ? "text-red-500" : isExpired ? "text-amber-500" : "text-red-400";
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+      <div className="flex min-h-screen items-center justify-center p-6" style={{ background: t.pageBg }}>
         <div className="max-w-lg rounded-xl border p-8 text-center shadow-sm" style={{ borderColor, background: bgColor }}>
-          <AlertTriangle className={`mx-auto mb-4 ${iconColor}`} size={48} />
-          <h1 className="mb-2 text-xl font-black text-slate-900">{title}</h1>
-          <p className="text-sm text-slate-600 leading-relaxed">{subtitle}</p>
+          <AlertTriangle className="mx-auto mb-4" size={48} style={{ color: isRevoked ? "#ef4444" : isExpired ? "#f59e0b" : "#f87171" }} />
+          <h1 className="mb-2 text-xl font-black" style={{ color: t.textPrimary }}>{title}</h1>
+          <p className="text-sm leading-relaxed" style={{ color: t.textSecondary }}>{subtitle}</p>
           {(isRevoked || isExpired) && (
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs" style={{ color: t.textMuted }}>
               Contact the link owner to generate a fresh share link from the IPC Command Center.
             </p>
           )}
@@ -1604,9 +1604,9 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
         </AnimatePresence>
 
         {invoices.length === 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-            <div className="text-sm font-bold text-amber-800">No records match the selected slicers.</div>
-            <div className="mt-1 text-xs text-slate-500">Reset filters or widen the month range to restore the shared dashboard data.</div>
+          <div className="rounded-xl p-5" style={{ background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.15)" }}>
+            <div className="text-sm font-bold" style={{ color: "#d97706" }}>No records match the selected slicers.</div>
+            <div className="mt-1 text-xs" style={{ color: t.textSecondary }}>Reset filters or widen the month range to restore the shared dashboard data.</div>
           </div>
         )}
 
@@ -1855,7 +1855,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
                     >
                       <span className="text-[9px] font-bold text-white">{item.days}d</span>
                     </motion.div>
-                    <div className="absolute bottom-0 top-0 w-px bg-slate-400/50" style={{ left: `${(42 / 120) * 100}%` }} />
+                    <div className="absolute bottom-0 top-0 w-px" style={{ left: `${(42 / 120) * 100}%`, background: t.textMuted }} />
                   </div>
                   <div className="w-20 text-right font-mono text-[10px]" style={{ color: t.textMuted }}>{fmtMoney(item.net)}</div>
                 </div>
@@ -1906,7 +1906,7 @@ export function IPCBoardView({ token, signedUrl, initialPage, initialOverrides }
             <ChartCard title="Smart Alerts and Project Register - التنبيهات وسجل المشاريع" icon={AlertTriangle} color="#dc2626" delay={0.3}>
               <div className="mb-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
                 {alerts.length === 0 ? (
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">No critical alerts in this snapshot.</div>
+                  <div className="rounded-lg p-4 text-sm" style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", color: "#10b981" }}>No critical alerts in this snapshot.</div>
                 ) : alerts.slice(0, 4).map((alert, index) => (
                   <button
                     key={`${alert.project}-${index}`}
