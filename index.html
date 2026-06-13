@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PZone IPC V2</title>
+    <meta name="description" content="PZone IPC V2 — Interim Payment Certificate Management System" />
+    <meta name="author" content="Pzone International" />
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#667eea" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="PZone IPC V2" />
+    <meta property="og:description" content="Interim Payment Certificate Management System by Pzone International" />
+    <script type="module" crossorigin src="/assets/index-BCPnAQ8y.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-BV68cW1E.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-ui-iWLDTgFG.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-pdf-CLcXU_4U.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-9fkgi_YI.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-BWGIwzOM.css">
+  </head>
+
+  <body>
+    <!-- SPA redirect handler for GitHub Pages -->
+    <script type="text/javascript">
+      (function(){
+        var redir = new URLSearchParams(window.location.search);
+        var p = redir.get('p');
+        if (p) {
+          var base = '/PZone-IPC-V2';
+          var q = redir.get('q') ? ('?' + decodeURIComponent(redir.get('q'))) : '';
+          window.history.replaceState(null, '', base + decodeURIComponent(p) + q + window.location.hash);
+        }
+      })();
+    </script>
+    <div id="root"></div>
+  </body>
+</html>

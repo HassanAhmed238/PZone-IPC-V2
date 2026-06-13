@@ -1,0 +1,73 @@
+# PZone Control System - AI Context & Rules
+
+## Role
+أنت Senior Software Engineer متخصص في React + TypeScript + Supabase + Vite.
+مسؤول عن بناء نظام ERP متكامل لإدارة المشاريع الإنشائية.
+
+## Tech Stack
+- **Frontend:** React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Lucide-React icons
+- **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **AI Providers:** Google Gemini (via Supabase Edge Function `analyze-contract`), Groq (Llama 3.3 70B), OpenRouter
+- **PDF Parsing:** pdfjs-dist (client-side)
+- **State:** TanStack React Query, React Context
+- **Routing:** React Router v6
+
+## Project Architecture
+```
+src/
+├── components/       # Reusable UI components (shadcn/ui based)
+├── hooks/            # Custom hooks (useContracts, useUserRoles, etc.)
+├── integrations/     # Supabase client & types
+├── pages/            # Route pages
+│   ├── contracts/    # Contract management module
+│   │   ├── ContractDetailPage.tsx      # Main contract view (BOQ, overview, amendments)
+│   │   ├── ContractAnalyzerPage.tsx    # AI-powered multi-department analysis
+│   │   └── NotebookLMAnalyzerPage.tsx  # Alternative analyzer
+│   ├── LoginPage.tsx
+│   ├── OngoingProjectsProgressPage.tsx
+│   ├── CostControlPage.tsx
+│   └── ClientInvoicesPage.tsx
+├── lib/              # Utility functions
+└── index.css         # Global styles & CSS variables
+```
+
+## Core Modules
+1. **User Management & Roles**
+   - Roles: `admin`, `pm`, `cost_control`, `contracts`, `planning`, `commercial`
+   - Default Admins: `solimane@pzone`, `admin@pzone.com` (always have full bypass rights)
+   - Permission hook: `useUserRoles.ts`
+
+2. **Contracts Management** (Main Module)
+   - PDF Upload & text extraction via `pdfjs-dist`
+   - **Smart BOQ Extraction:** Lump Sum format with sections (`type: "section"`) and items (`type: "item"`, `unit: "LS"`, `quantity: 1`)
+   - **AI Analysis:** 8 multi-department reports (Commercial, Risk, PM, Planning, Procurement, Contracts, Master, GM)
+   - **Auto-Correction:** Extract metadata (employer, contractor, value) from PDF text
+   - Amendments tracking (in-progress)
+
+3. **Invoices & Cost Control**
+   - Client Invoices (المستخلصات) tracking
+   - Cost Control Dashboards (budget vs actuals)
+
+## Security Rules
+- ❌ **NEVER** expose `service_role` keys in client-side code
+- ✅ Use `supabase` client from `@/integrations/supabase/client` for all DB operations
+- ✅ Use `supabase.storage.from("contracts").download()` for file access
+- ✅ Route AI API calls (Gemini) through Supabase Edge Functions
+- ✅ Use Row Level Security (RLS) policies in Supabase
+
+## Code Requirements
+- اكتب كود نظيف ومنظم مع تعليقات توضيحية
+- استخدم best practices للـ React + TypeScript
+- اعمل error handling كامل مع رسائل عربية واضحة
+- Always use Arabic (`ar`) for user-facing UI and date formatting (`date-fns/locale/ar`)
+- Keep UI modern, premium (gradients, shadows, micro-animations, responsive)
+- Use `toast.success()` / `toast.error()` from Sonner for notifications
+- When modifying BOQ logic, ensure backward compatibility with old generated BOQs
+
+## Database Schema (Key Tables)
+- `contracts` - العقود (id, title, contract_type, employer_name, contractor_name, contract_value, currency, file_url, ai_analysis_results, ai_extracted, status)
+- `contract_clauses` - بنود العقد
+- `contract_amendments` - ملاحق التعديل
+- `ongoing_projects` - المشاريع الجارية
+- `profiles` - بيانات المستخدمين والصلاحيات
+ 
