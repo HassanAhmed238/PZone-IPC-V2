@@ -90,6 +90,93 @@
     --gradient-brand: linear-gradient(135deg, #c5a880, #dfc9ab);
     --gradient-sidebar: linear-gradient(180deg, #09090b 0%, #050506 100%);
   }
+
+  /* ── Grey Theme ── */
+  [data-theme="grey"] {
+    color-scheme: light;
+    --background: 220 13% 91%;
+    --foreground: 220 30% 10%;
+    --card: 220 14% 96%;
+    --card-foreground: 220 30% 10%;
+    --popover: 220 14% 96%;
+    --popover-foreground: 220 30% 10%;
+    --muted: 220 12% 86%;
+    --muted-foreground: 220 10% 45%;
+    --border: 220 12% 84%;
+    --input: 220 12% 84%;
+  }
+
+  /* ── Dark Grey Theme ── */
+  [data-theme="dark-grey"] {
+    color-scheme: dark;
+    --background: 240 20% 11%;
+    --foreground: 0 0% 95%;
+    --card: 240 18% 14%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 18% 14%;
+    --popover-foreground: 0 0% 95%;
+    --muted: 240 15% 18%;
+    --muted-foreground: 240 5% 60%;
+    --border: 240 12% 20%;
+    --input: 240 12% 20%;
+  }
+
+  /* ── Baby Blue Theme ── */
+  [data-theme="baby-blue"] {
+    color-scheme: light;
+    --background: 213 100% 97%;
+    --foreground: 220 30% 10%;
+    --card: 210 100% 99%;
+    --card-foreground: 220 30% 10%;
+    --popover: 210 100% 99%;
+    --popover-foreground: 220 30% 10%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 213 50% 93%;
+    --muted-foreground: 217 30% 45%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border: 213 50% 90%;
+    --input: 213 50% 90%;
+    --ring: 217 91% 60%;
+  }
+
+  /* ── Golden Theme ── */
+  [data-theme="golden"] {
+    color-scheme: dark;
+    --background: 20 14% 7%;
+    --foreground: 36 30% 90%;
+    --card: 20 12% 10%;
+    --card-foreground: 36 30% 90%;
+    --popover: 20 12% 10%;
+    --popover-foreground: 36 30% 90%;
+    --primary: 36 38% 64%;
+    --primary-foreground: 20 14% 7%;
+    --muted: 20 10% 14%;
+    --muted-foreground: 36 15% 55%;
+    --border: 20 10% 16%;
+    --input: 20 10% 16%;
+  }
+
+  /* ── P.ZONE Brand Theme ── */
+  [data-theme="pzone"] {
+    color-scheme: dark;
+    --background: 230 40% 6%;
+    --foreground: 210 40% 95%;
+    --card: 230 35% 9%;
+    --card-foreground: 210 40% 95%;
+    --popover: 230 35% 9%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 174 62% 42%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 230 25% 13%;
+    --muted-foreground: 210 20% 55%;
+    --accent: 262 80% 64%;
+    --accent-foreground: 0 0% 100%;
+    --border: 230 20% 15%;
+    --input: 230 20% 15%;
+    --ring: 174 62% 42%;
+  }
 }
 
 @layer base {
