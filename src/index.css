@@ -158,3 +158,70 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(197, 168, 128, 0.3);
 }
+
+/* ═══════════════════════════════════════════════
+   Print Styles for IPC Board Report
+   ═══════════════════════════════════════════════ */
+@media print {
+  /* Reset backgrounds for clean printing */
+  body,
+  html {
+    background: white !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide interactive elements */
+  .print\\:hidden,
+  [data-print-hide],
+  .board-nav-anchors,
+  .board-slicers,
+  .board-export-btn {
+    display: none !important;
+  }
+
+  /* Force white cards */
+  .board-card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Page breaks between major sections */
+  .board-section-break {
+    page-break-before: always;
+  }
+
+  /* Ensure charts render with full color */
+  .recharts-wrapper {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Disable animations */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Footer stays at bottom */
+  .board-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 8px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 9px;
+    color: #94a3b8;
+  }
+
+  /* Page margin */
+  @page {
+    margin: 15mm 10mm;
+    size: A4 portrait;
+  }
+}

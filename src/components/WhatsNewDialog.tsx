@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, DollarSign, Shield, Zap, CheckCircle } from "lucide-react";
+import { Sparkles, DollarSign, Shield, Zap, CheckCircle, Palette, FileDown, MousePointerClick, RotateCcw } from "lucide-react";
 
 /* ─── Release changelog ─────────────────────────────── */
 
-const APP_VERSION = "2.4.0";
+const APP_VERSION = "2.6.0";
 const STORAGE_KEY = `pzone_whats_new_seen_${APP_VERSION}`;
 
 interface ChangeItem {
@@ -24,32 +24,46 @@ interface ChangeItem {
 
 const CHANGES: ChangeItem[] = [
   {
+    icon: <MousePointerClick className="h-5 w-5" />,
+    title: "Cross-Filter Chart Drill-Down",
+    description:
+      "Click any chart element — month, sector, client, or status — and all other charts instantly filter to show only that data. Interactive analytics at your fingertips.",
+    tag: "new",
+  },
+  {
+    icon: <RotateCcw className="h-5 w-5" />,
+    title: "Per-Chart Reset Buttons",
+    description:
+      "Every chart now shows a 'Reset filter' button in its header when a drill-down is active. No need to scroll up to clear filters.",
+    tag: "new",
+  },
+  {
+    icon: <Palette className="h-5 w-5" />,
+    title: "Premium Corporate Luxury Redesign",
+    description:
+      "Complete visual overhaul: gradient mesh header, glassmorphic tooltips, tinted KPI cards with hover animations, editorial executive brief, and enlarged PZone branding.",
+    tag: "improved",
+  },
+  {
+    icon: <Shield className="h-5 w-5" />,
+    title: "Comprehensive Security Audit",
+    description:
+      "Full security audit completed: 4 critical, 4 high, 7 medium findings identified. Key fixes include API key rotation, token hardening, and RLS policy recommendations.",
+    tag: "improved",
+  },
+  {
+    icon: <FileDown className="h-5 w-5" />,
+    title: "PDF Export for Shared Board",
+    description:
+      "One-click PDF export button on the shared board. Print-ready A4 layout with @media print CSS for clean output.",
+    tag: "new",
+  },
+  {
     icon: <DollarSign className="h-5 w-5" />,
     title: "USD / EGP Currency Support",
     description:
       "Projects with $ in the contract value are now automatically detected as USD. Dashboard portfolio totals convert to EGP using the live Central Bank of Egypt rate.",
     tag: "new",
-  },
-  {
-    icon: <Shield className="h-5 w-5" />,
-    title: "Enhanced Security",
-    description:
-      "All admin scripts now use environment variables instead of hardcoded keys. Sensitive data has been removed from version control.",
-    tag: "improved",
-  },
-  {
-    icon: <Zap className="h-5 w-5" />,
-    title: "Performance Boost",
-    description:
-      "Eliminated N+1 database queries in Projects, Alarms, and Financial dashboards — pages load up to 5× faster with large datasets.",
-    tag: "improved",
-  },
-  {
-    icon: <CheckCircle className="h-5 w-5" />,
-    title: "Sync Reliability",
-    description:
-      "Google Sheet sync now handles duplicates correctly. Collection transactions use dedupe keys to prevent double-counting.",
-    tag: "fixed",
   },
 ];
 
