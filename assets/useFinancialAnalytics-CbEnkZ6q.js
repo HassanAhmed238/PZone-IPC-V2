@@ -1,1 +1,0 @@
-import{u as t}from"./useFinancialSnapshot-BmBLkKRv.js";function e(n){return n.map(c=>({...c,total_collections:c.actual_collected,collection_efficiency:c.collection_efficiency}))}function i(){const n=t();return{...n,projects:e(n.projects),monthlyTrend:n.monthlyTrend}}export{i as u};
