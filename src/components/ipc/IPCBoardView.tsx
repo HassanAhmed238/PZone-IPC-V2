@@ -672,6 +672,7 @@ const DEFAULT_SLICERS: BoardSlicerState = {
 type DrillSource = "month" | "sector" | "client" | "status" | null;
 
 function DrillDownBanner({ source, label, onClear }: { source: DrillSource; label: string; onClear: () => void }) {
+  const tc = useBoardTheme();
   if (!source) return null;
   const colorMap: Record<string, string> = { month: "#2563eb", sector: "#7c3aed", client: "#d97706", status: "#16a34a" };
   const iconLabel: Record<string, string> = { month: "Month", sector: "Sector", client: "Client", status: "Status" };
@@ -693,7 +694,7 @@ function DrillDownBanner({ source, label, onClear }: { source: DrillSource; labe
           <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: accent }}>
             Drill-Down Active — {iconLabel[source]}
           </div>
-          <div className="text-xs font-semibold" style={{ color: t.textPrimary }}>
+          <div className="text-xs font-semibold" style={{ color: tc.textPrimary }}>
             Filtered by: <span className="font-black" style={{ color: accent }}>{label}</span>
           </div>
         </div>
